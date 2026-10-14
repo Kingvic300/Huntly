@@ -162,7 +162,16 @@ export function GmailConnect() {
           <p className="mt-1 max-w-[62ch] text-[12.5px] leading-relaxed text-muted">
             Huntly asks Google for two permissions: write drafts and send the emails you approve, and see who sent each message in your application threads so it can notice replies. It cannot read what any email says. The sign-in happens in your browser.
           </p>
-          {g?.flow_error ? <p className="mt-1.5 text-[12.5px] text-bad selectable">{g.flow_error}</p> : null}
+          {g?.flow_error ? (
+            <p className="mt-1.5 text-[12.5px] text-bad selectable">
+              {g.flow_error}
+              {/access_denied|403/i.test(g.flow_error) ? (
+                <span className="mt-1 block text-muted">
+                  Google blocked the sign-in because your address isn't a test user of your OAuth app. In Google Cloud Console, open Google Auth Platform → Audience, add your Gmail address under Test users (or click Publish app), then connect again.
+                </span>
+              ) : null}
+            </p>
+          ) : null}
           {g && !g.client_configured ? <p className="mt-1.5 text-[12.5px] text-warn">Add your Google sign-in file below first.</p> : null}
           {g?.connected && g.reply_tracking_permission === false ? (
             <p className="mt-1.5 text-[12.5px] text-warn">Connected before reply tracking existed. Disconnect and connect again to allow it.</p>

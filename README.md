@@ -145,7 +145,7 @@ All optional — enable only what you use.
 
 | Credential | Used for | How to get it |
 | --- | --- | --- |
-| Google OAuth client (Desktop app JSON) | Gmail drafts, approved sends, daily digest, reply tracking | Google Cloud Console → create project → enable **Gmail API** → OAuth consent screen (External, add yourself as test user) → Credentials → *OAuth client ID* → **Desktop app** → download JSON. Scopes requested: `gmail.compose` (drafts and sending) and `gmail.metadata` (message headers only, for reply tracking). Huntly cannot read email content. |
+| Google OAuth client (Desktop app JSON) | Gmail drafts, approved sends, daily digest, reply tracking | Google Cloud Console → create project → enable **Gmail API** → Google Auth Platform (OAuth consent screen): External, then **Audience → Test users → add your own Gmail address** → Credentials → *OAuth client ID* → **Desktop app** → download JSON. Recommended: on Audience click **Publish app** (no verification needed for personal use); in Testing mode Google expires the connection every 7 days. When connecting, Google warns the app is unverified; it is your own app, so choose Continue. If you see `Error 403: access_denied`, your address is not on the test-user list. Scopes requested: `gmail.compose` (drafts and sending) and `gmail.metadata` (message headers only, for reply tracking). Huntly cannot read email content. |
 | X API bearer token | X recent-search source | developer.x.com → project/app → *Bearer Token*. Requires an access tier that includes `GET /2/tweets/search/recent`. |
 | Groq API key | Optional AI fit notes and cover-letter wording | console.groq.com → API Keys. |
 

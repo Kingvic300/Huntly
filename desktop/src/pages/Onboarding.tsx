@@ -217,9 +217,13 @@ export default function Onboarding({ status, onFinish }: { status: OnboardingSta
                 <ol className="mt-2 list-decimal space-y-1 pl-5 leading-relaxed selectable">
                   <li>Open console.cloud.google.com and create a project of your own.</li>
                   <li>In APIs and services, enable the Gmail API.</li>
-                  <li>Set up the OAuth consent screen as External and add yourself as a test user.</li>
+                  <li>Under Google Auth Platform (or OAuth consent screen), choose External, then add your own Gmail address under Audience → Test users.</li>
                   <li>Create credentials, choose OAuth client ID, then Desktop app.</li>
                   <li>Download the JSON file and load it above.</li>
+                  <li>
+                    Optional but recommended: on the Audience page click Publish app (no verification needed for personal use). In Testing mode Google disconnects you every 7 days.
+                  </li>
+                  <li>When connecting, Google warns the app isn't verified. It's your own app, so choose Continue.</li>
                 </ol>
               </details>
             </>
