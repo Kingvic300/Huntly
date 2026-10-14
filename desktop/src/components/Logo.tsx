@@ -1,0 +1,12 @@
+/** Huntly mark: an H whose crossbar rises toward the taller, amber "hot lead" stem. */
+export function Logo({ size = 24, className }: { size?: number; className?: string }) {
+  return (
+    <svg viewBox="0 0 1024 1024" width={size} height={size} className={className} role="img" aria-label="Huntly">
+      <rect width="1024" height="1024" rx="228" fill="#1D2128" />
+      <rect x="12" y="12" width="1000" height="1000" rx="216" fill="none" stroke="#323845" strokeWidth="24" />
+      <rect x="268" y="300" width="132" height="484" rx="44" fill="#8FA4FF" />
+      <path d="M376 560 L648 452 L648 572 L376 680 Z" fill="#8FA4FF" />
+      <rect x="624" y="200" width="132" height="584" rx="44" fill="#F2B84B" />
+    </svg>
+  );
+}

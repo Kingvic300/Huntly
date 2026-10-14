@@ -7,6 +7,7 @@ import { qk, useAction, useGmail, useHealth, useNotifications, usePipeline, useP
 import { cn, formatDate, relativeTime, titleCase } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown";
+import { Logo } from "../Logo";
 import { Dot, HeatMeter } from "../ui/misc";
 
 export const NAV = [
@@ -261,13 +262,8 @@ function TitleBar() {
   }, []);
   return (
     <header className="flex h-[52px] shrink-0 items-center gap-4 border-b border-line/70 px-4">
-      <div className="flex w-[80px] items-center gap-2">
-        <svg viewBox="0 0 24 24" className="size-6" aria-hidden>
-          <rect width="24" height="24" rx="6" fill="#252a33" />
-          <path d="M7 17V7m10 10V7M7 12h10" stroke="#8fa4ff" strokeWidth="2.4" strokeLinecap="round" />
-          <circle cx="17" cy="7" r="2.2" fill="#f2b84b" />
-        </svg>
-        <span className="sr-only">Huntly</span>
+      <div className="flex w-[80px] items-center">
+        <Logo size={26} />
       </div>
       <CommandSearch />
       <div className="ml-auto flex items-center gap-2">

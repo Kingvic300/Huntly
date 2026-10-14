@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Logo } from "@/components/Logo";
 import { api, ApiError } from "@/lib/api";
 
 export default function Unlock() {
@@ -28,11 +29,7 @@ export default function Unlock() {
   return (
     <div className="flex h-full items-center justify-center p-6">
       <form onSubmit={submit} className="w-full max-w-[360px]">
-        <svg viewBox="0 0 24 24" className="size-10" aria-hidden>
-          <rect width="24" height="24" rx="6" fill="#252a33" />
-          <path d="M7 17V7m10 10V7M7 12h10" stroke="#8fa4ff" strokeWidth="2.4" strokeLinecap="round" />
-          <circle cx="17" cy="7" r="2.2" fill="#f2b84b" />
-        </svg>
+        <Logo size={44} />
         <h1 className="mt-6 text-[24px] font-semibold tracking-[-0.015em]">Unlock Huntly</h1>
         <p className="mt-1.5 text-[13.5px] leading-relaxed text-muted">Your master password decrypts your saved keys. It never leaves this computer.</p>
         <Input

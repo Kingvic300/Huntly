@@ -3,6 +3,7 @@ import { Check } from "lucide-react";
 import { useState } from "react";
 import { CredentialList, EncryptedNote, GmailConnect } from "@/components/Credentials";
 import { CvUploadButton } from "@/components/CvImport";
+import { Logo } from "@/components/Logo";
 import { TagInput } from "@/components/TagInput";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/input";
@@ -38,6 +39,7 @@ function Intro({ dataDir }: { dataDir: string }) {
   ];
   return (
     <>
+      <Logo size={52} className="mb-6" />
       <h1 className="text-[30px] font-semibold leading-tight tracking-[-0.02em]">Find work without handing your data to anyone.</h1>
       <p className="mt-3 text-[14px] leading-relaxed text-muted">Huntly searches the job sources you choose, ranks every job against your profile, and drafts tailored applications for you to approve. Setup takes about five minutes.</p>
       <dl className="mt-8 space-y-4">

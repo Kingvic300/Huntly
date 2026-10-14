@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 "$ROOT/scripts/build-sidecar.sh"
 cd "$ROOT/desktop"
-npx tauri build --bundles deb,appimage
+npx tauri build --bundles "${HUNTLY_BUNDLES:-deb,appimage}"
 mkdir -p "$ROOT/release"
 find src-tauri/target/release/bundle \( -name '*.deb' -o -name '*.AppImage' \) -exec cp {} "$ROOT/release/" \;
 (cd "$ROOT/release" && sha256sum ./* > SHA256SUMS)

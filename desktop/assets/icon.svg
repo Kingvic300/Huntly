@@ -1,7 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
-  <rect width="1024" height="1024" rx="224" fill="#0f1320"/>
-  <rect x="24" y="24" width="976" height="976" rx="204" fill="none" stroke="#252b3d" stroke-width="16"/>
-  <circle cx="460" cy="460" r="200" fill="none" stroke="#22d3ee" stroke-width="64"/>
-  <path d="M606 606 L790 790" stroke="#22d3ee" stroke-width="80" stroke-linecap="round"/>
-  <path d="M390 465 l50 50 l100 -110" fill="none" stroke="#e5e7eb" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Huntly mark: an H whose crossbar rises toward the taller, amber "hot lead" stem. -->
+  <rect width="1024" height="1024" rx="228" fill="#1D2128"/>
+  <rect x="12" y="12" width="1000" height="1000" rx="216" fill="none" stroke="#323845" stroke-width="24"/>
+  <rect x="268" y="300" width="132" height="484" rx="44" fill="#8FA4FF"/>
+  <path d="M376 560 L648 452 L648 572 L376 680 Z" fill="#8FA4FF"/>
+  <rect x="624" y="200" width="132" height="584" rx="44" fill="#F2B84B"/>
 </svg>
