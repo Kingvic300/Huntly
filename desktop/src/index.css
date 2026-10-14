@@ -1,0 +1,95 @@
+@import "@fontsource-variable/schibsted-grotesk/wght.css";
+@import "tailwindcss";
+
+/*
+ * Huntly visual language
+ * Graphite surfaces, periwinkle for actions and focus, amber reserved for lead heat.
+ */
+@theme {
+  --color-ink: #16191e;
+  --color-panel: #1d2128;
+  --color-raised: #252a33;
+  --color-hover: #2b313b;
+  --color-line: #323845;
+  --color-line-strong: #434a5a;
+  --color-fg: #eceef2;
+  --color-muted: #9aa1af;
+  --color-faint: #6c7383;
+  --color-act: #8fa4ff;
+  --color-act-strong: #7088fa;
+  --color-act-ink: #0f1430;
+  --color-heat: #f2b84b;
+  --color-heat-dim: #7a6232;
+  --color-ok: #6fd3a0;
+  --color-bad: #f0848a;
+  --color-warn: #e9b872;
+  --color-paper: #fbfaf7;
+  --color-paper-ink: #1d2128;
+  --font-sans: "Schibsted Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "DejaVu Sans Mono", monospace;
+  --radius-chip: 5px;
+  --radius-control: 7px;
+  --radius-pane: 10px;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-ink text-fg font-sans antialiased;
+    font-size: 13.5px;
+    line-height: 1.45;
+    overflow: hidden;
+    user-select: none;
+  }
+  input,
+  textarea,
+  [contenteditable],
+  .selectable {
+    user-select: text;
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--color-act) 35%, transparent);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-act);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar {
+    width: 11px;
+    height: 11px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-line);
+    border-radius: 8px;
+    border: 3px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-line-strong);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .key {
+    @apply inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-[4px] border border-line bg-raised px-1 text-[10.5px] font-medium text-muted;
+  }
+  .page-title {
+    @apply text-[22px] font-semibold tracking-[-0.015em] text-fg;
+  }
+  .section-title {
+    @apply text-[13.5px] font-semibold text-fg;
+  }
+}

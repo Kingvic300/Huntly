@@ -1,0 +1,21 @@
+# Runtime dependencies (pinned). Regenerate with care; see CONTRIBUTING.md.
+alembic==1.20.0
+APScheduler==3.11.3
+cryptography==50.0.2
+fastapi==0.143.0
+feedparser==6.0.14
+fpdf2==2.8.9
+google-api-python-client==2.201.0
+google-auth==2.62.0
+google-auth-oauthlib==1.5.0
+httpx==0.28.1
+keyring==25.7.0
+pydantic==2.14.1
+pypdf==6.20.1
+python-docx==1.2.0
+python-multipart==0.0.32
+SQLAlchemy==2.1.4
+starlette==1.8.0
+tzdata==2026.5
+tzlocal==5.4.4
+uvicorn==0.54.0

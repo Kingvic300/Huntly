@@ -1,0 +1,15 @@
+# Optional: run the headless core in a container. Exposed on the host loopback only.
+#   HUNTLY_API_TOKEN=$(openssl rand -hex 32) docker compose up -d
+services:
+  core:
+    build: .
+    environment:
+      HUNTLY_API_TOKEN: ${HUNTLY_API_TOKEN:?set HUNTLY_API_TOKEN}
+      HUNTLY_BIND: 0.0.0.0   # inside the container only; host mapping below stays on 127.0.0.1
+    ports:
+      - "127.0.0.1:8765:8765"
+    volumes:
+      - huntly-data:/data
+    restart: unless-stopped
+volumes:
+  huntly-data:

@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+core/build/
+core/dist/
+*.spec.bak
+
+# Node / Tauri
+node_modules/
+desktop/dist/
+desktop/src-tauri/target/
+desktop/src-tauri/binaries/
+desktop/src-tauri/gen/
+
+# Local data and secrets (never commit)
+*.sqlite3
+*.sqlite3-*
+vault.json
+client_secret*.json
+.env
+.env.*
+!.env.example
+
+# Release artefacts
+release/
