@@ -27,7 +27,7 @@ const LABELS: Partial<Record<keyof Profile, string>> = {
 
 function preview(key: keyof Profile, value: unknown): string {
   if (Array.isArray(value)) {
-    if (key === "experience") return (value as Profile["experience"]).map((e) => [e.title, e.company].filter(Boolean).join(" at ") + (e.highlights.length ? ` (${e.highlights.length} points)` : "")).join("; ");
+    if (key === "experience") return (value as Profile["experience"]).map((e) => [e.title, e.company].filter(Boolean).join(" at ") + (e.highlights.length ? ` (${e.highlights.length} ${e.highlights.length === 1 ? "point" : "points"})` : "")).join("; ");
     if (key === "education") return (value as Profile["education"]).map((e) => [e.qualification, e.institution].filter(Boolean).join(", ")).join("; ");
     if (key === "projects") return (value as Profile["projects"]).map((p) => p.name).join(", ");
     return (value as string[]).join(", ");

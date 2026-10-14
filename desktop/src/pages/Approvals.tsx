@@ -12,7 +12,7 @@ import { cn, formatBytes, formatDateTime, relativeTime, titleCase } from "@/lib/
 
 const TONE: Record<Approval["status"], "neutral" | "act" | "ok" | "bad" | "warn"> = { pending: "act", approved: "warn", sent: "ok", rejected: "neutral", failed: "bad" };
 const STATUS_TEXT: Record<Approval["status"], string> = { pending: "Needs review", approved: "Approved", sent: "Sent", rejected: "Rejected", failed: "Failed" };
-const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+const EMAIL_RE = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/; // same rule as the core
 
 function Review({ id }: { id: number }) {
   const approval = useApproval(id);
@@ -52,7 +52,7 @@ function Review({ id }: { id: number }) {
     onSuccess: () => setEditing(false),
   });
   const draft = useAction(() => api(`/approvals/${id}/draft`, { method: "POST" }), { invalidate: inv, success: "Saved to your Gmail drafts. Nothing was sent." });
-  const approve = useAction(() => api(`/approvals/${id}/approve`, { method: "POST", json: { confirm: true, content_hash: a!.content_hash } }), { invalidate: inv, success: "Approved. You can send it now." });
+  const approve = useAction(() => api(`/approvals/${id}/approve`, { method: "POST", json: { confirm: true, content_hash: a!.content_hash } }), { invalidate: inv, success: "Approved" });
   const reject = useAction(() => api(`/approvals/${id}/reject`, { method: "POST" }), { invalidate: inv, success: "Email rejected" });
   const send = useAction(() => api<{ message_id: string }>(`/approvals/${id}/send`, { method: "POST" }), {
     invalidate: [...inv, ["jobs"], qk.audit],
@@ -235,7 +235,7 @@ function Review({ id }: { id: number }) {
                     <ShieldCheck className="size-4 text-act" /> Approved
                   </p>
                   <p className="mt-1 text-[12.5px] text-muted">
-                    Send within <span className="tabular-nums text-fg">{mmss}</span> or approve again. Any edit cancels the approval.
+                    Send within <span className="font-medium text-fg">{mmss}</span> or approve again. Any edit cancels the approval.
                   </p>
                   <Button variant="primary" size="lg" className="mt-4 w-full" disabled={!gmail.data?.connected || editing} onClick={() => setConfirmSend(true)}>
                     <Send /> Send email

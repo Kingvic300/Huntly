@@ -131,6 +131,8 @@ def _experience(lines: list[str]) -> list[dict]:
                 cur["title"], cur["company"] = _split_title(rest)
             elif rest and not cur["company"]:
                 cur["company"] = rest
+            elif rest and not cur["location"] and len(rest) <= 60:
+                cur["location"] = rest
             continue
         if cur is not None and len(line) > 90:
             cur["highlights"].append(line)
@@ -248,11 +250,16 @@ def parse_cv(text: str) -> dict:
         if "full_name" in found and "headline" not in found and len(line) <= 90:
             found["headline"] = line
             break
+    # Location: a short piece of a contact line that isn't an email, phone or link.
     for line in header[:8]:
-        if re.search(r"(?i)\b(lagos|abuja|nigeria|london|remote|[A-Z][a-z]+,\s*[A-Z][a-z]+)\b", line) and not EMAIL.search(line) and len(line) < 80 and line != found.get("headline"):
-            loc = [p.strip() for p in re.split(r"[|•·]", line) if re.search(r"[A-Za-z]", p) and not EMAIL.search(p) and not PHONE.search(p) and not URL.search(p)]
-            if loc:
-                found["location"] = loc[0]
+        if "location" in found or line == found.get("headline") or line == found.get("full_name"):
+            continue
+        for part in re.split(r"\s*[|•·]\s*|\s{3,}", line):
+            part = part.strip(" ,")
+            if not part or EMAIL.search(part) or PHONE.search(part) or ("/" in part and URL.search(part)) or part.lower().startswith("www."):
+                continue
+            if re.fullmatch(r"[A-Za-zÀ-ÿ .'-]+,\s*[A-Za-zÀ-ÿ .'-]+", part) and len(part) <= 60:
+                found["location"] = part
                 break
 
     if sections.get("summary"):

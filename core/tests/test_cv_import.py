@@ -36,13 +36,14 @@ def test_round_trip_own_cv(tmp_path: Path, fmt):
     f = r["fields"]
     assert f["full_name"] == "Ada Example"
     assert f["email"] == "ada@example.com"
+    assert f["location"] == "Lagos, Nigeria"
     assert f["linkedin_url"] == "https://linkedin.com/in/ada-example"
     assert f["github_url"] == "https://github.com/adaex"
     assert {"Python", "FastAPI", "PostgreSQL", "Docker"} <= set(f["skills"])
     titles = [e["title"] for e in f["experience"]]
     assert "Backend Engineer" in titles and "Junior Developer" in titles
     acme = next(e for e in f["experience"] if e["title"] == "Backend Engineer")
-    assert acme["company"] == "Acme Ltd" and acme["start"] == "Jan 2021" and "Built payment APIs in Python" in acme["highlights"]
+    assert acme["company"] == "Acme Ltd" and acme["location"] == "Lagos" and acme["start"] == "Jan 2021" and "Built payment APIs in Python" in acme["highlights"]
     assert any("University of Lagos" in e["institution"] for e in f["education"])
     assert "AWS Certified Cloud Practitioner" in f["certifications"]
     assert set(f["languages"]) == {"English", "Yoruba"}
@@ -77,6 +78,7 @@ def test_typical_handwritten_docx(tmp_path: Path):
     assert f["full_name"] == "Jane Doe" and f["headline"] == "Security Analyst"
     assert f["linkedin_url"] == "https://linkedin.com/in/janedoe"
     assert f["phone"].startswith("+44")
+    assert f["location"] == "London, UK"
     assert {"Python", "Bash", "Splunk", "Wireshark", "Nmap"} <= set(f["skills"])
     assert f["experience"][0]["title"] == "SOC Analyst" and f["experience"][0]["company"] == "Contoso"
     assert f["experience"][0]["end"] == "Present" and len(f["experience"][0]["highlights"]) == 2

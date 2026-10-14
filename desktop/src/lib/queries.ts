@@ -72,7 +72,7 @@ export const useCredentials = () => useQuery({ queryKey: qk.credentials, queryFn
 export const useGmail = (poll = false) => useQuery({ queryKey: qk.gmail, queryFn: () => api<GmailStatus>("/gmail/status"), refetchInterval: poll ? 1500 : 30000 });
 export const useNotifications = () => useQuery({ queryKey: qk.notifications, queryFn: () => api<{ items: Notification[]; unread: number }>("/notifications"), refetchInterval: 10000 });
 export const useAudit = () => useQuery({ queryKey: qk.audit, queryFn: () => api<AuditEntry[]>("/audit") });
-export const useScheduler = () => useQuery({ queryKey: qk.scheduler, queryFn: () => api<SchedulerStatus & { runs: Run[] }>("/scheduler"), refetchInterval: 5000 });
+export const useScheduler = () => useQuery({ queryKey: qk.scheduler, queryFn: () => api<SchedulerStatus & { runs: Run[] }>("/scheduler"), refetchInterval: (q) => (q.state.data?.collecting ? 1500 : 5000) });
 export const useAnalytics = (days: number) => useQuery({ queryKey: qk.analytics(days), queryFn: () => api<Analytics>(`/analytics?days=${days}`) });
 
 /** Mutation with toast feedback and cache invalidation. */

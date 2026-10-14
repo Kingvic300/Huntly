@@ -285,6 +285,16 @@ function TitleBar() {
 function StatusBar() {
   const gmail = useGmail();
   const sched = useScheduler();
+  const qc = useQueryClient();
+  const wasCollecting = useRef(false);
+  // When a background search finishes, refresh everything it may have changed.
+  useEffect(() => {
+    const now = !!sched.data?.collecting;
+    if (wasCollecting.current && !now) {
+      for (const key of [["jobs"], ["sources"], ["analytics"], qk.pipeline, qk.notifications]) qc.invalidateQueries({ queryKey: key });
+    }
+    wasCollecting.current = now;
+  }, [sched.data?.collecting, qc]);
   const health = useHealth();
   const pipeline = usePipeline();
   const next = sched.data?.jobs?.find((j) => j.id === "collect")?.next_run;

@@ -106,7 +106,7 @@ def template_paragraphs(t: TailoredCV, job_title: str, company: str) -> list[str
     if t.relevant_skills:
         skills = t.relevant_skills[:8]
         listed = ", ".join(skills[:-1]) + f" and {skills[-1]}" if len(skills) > 1 else skills[0]
-        paras.append(f"The role calls for {listed}, all of which I use in my work.")
+        paras.append(f"The role calls for {listed}, {'all of which I use' if len(skills) > 1 else 'which I use'} in my work.")
     if t.experience:
         e = t.experience[0]
         if e.title and e.company:
