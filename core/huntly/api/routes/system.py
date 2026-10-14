@@ -276,6 +276,7 @@ class SettingsIn(BaseModel):
     reply_tracking_enabled: bool | None = None
     follow_up_after_days: int | None = Field(None, ge=2, le=60)
     reply_body_analysis: bool | None = None
+    auto_update: bool | None = None
 
 
 @router.get("/settings")

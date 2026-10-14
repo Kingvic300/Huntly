@@ -8,6 +8,7 @@ import { cn, formatDate, relativeTime, titleCase } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown";
 import { Logo } from "../Logo";
+import { UpdateBanner } from "../Updater";
 import { Dot, HeatMeter } from "../ui/misc";
 
 export const NAV = [
@@ -338,6 +339,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </div>
       <StatusBar />
+      <UpdateBanner />
     </div>
   );
 }

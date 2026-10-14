@@ -37,6 +37,7 @@ DEFAULT_SETTINGS: dict[str, Any] = {
     "reply_tracking_enabled": True,
     "follow_up_after_days": 7,
     "reply_body_analysis": False,
+    "auto_update": True,
 }
 
 

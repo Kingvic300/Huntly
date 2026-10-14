@@ -76,6 +76,18 @@
         "installMode": "currentUser"
       }
     },
-    "homepage": "https://github.com/Kingvic300/Huntly"
+    "homepage": "https://github.com/Kingvic300/Huntly",
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDdDQkIxMDE0NDZFRjk4MTcKUldRWG1POUdGQkM3ZkJFc1JtWWpCMlZtdHZQakdXQm1hOGlGTVJXQllJR0k5T3l6bGxsdGRKRGoK",
+      "endpoints": [
+        "https://github.com/Kingvic300/Huntly/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
   }
 }

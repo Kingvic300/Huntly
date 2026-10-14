@@ -271,6 +271,7 @@ export type Settings = {
   reply_tracking_enabled: boolean;
   follow_up_after_days: number;
   reply_body_analysis: boolean;
+  auto_update: boolean;
   gmail_address?: string | null;
   timezone: string;
 };

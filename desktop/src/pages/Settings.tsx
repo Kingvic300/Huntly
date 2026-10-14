@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Lock } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CredentialList, EncryptedNote, GmailConnect } from "@/components/Credentials";
+import { useUpdater } from "@/components/Updater";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Field, Input } from "@/components/ui/input";
@@ -16,6 +17,7 @@ const SECTIONS = [
   { id: "ai", label: "AI assistance" },
   { id: "security", label: "Security" },
   { id: "privacy", label: "Privacy" },
+  { id: "updates", label: "Updates" },
   { id: "audit", label: "Activity log" },
 ] as const;
 type SectionId = (typeof SECTIONS)[number]["id"];
@@ -63,6 +65,7 @@ function useSettingsForm() {
           reply_tracking_enabled: s!.reply_tracking_enabled,
           follow_up_after_days: Number(s!.follow_up_after_days),
           reply_body_analysis: s!.reply_body_analysis,
+          auto_update: s!.auto_update,
         },
       }),
     { success: "Settings saved", invalidate: [qk.settings, qk.scheduler, qk.health] },
@@ -247,7 +250,7 @@ function Privacy() {
   const health = useHealth();
   const facts = [
     ["Your data", <>Everything is in <code className="font-mono text-[12px] text-fg selectable">{health.data?.data_dir}</code>. Delete that folder to erase it all.</>],
-    ["Telemetry", "None. No analytics, crash reports or update checks."],
+    ["Telemetry", "None. No analytics or crash reports. The only call Huntly makes on its own is the update check to GitHub, which you can turn off under Updates."],
     ["The app's local connection", "Listens only on this computer (127.0.0.1) and needs a new secret token each launch."],
     ["Who Huntly talks to", "Only the job sources you add, Google for Gmail, X and Groq, using your own keys. Private and local network addresses are blocked."],
     ["Job text", "Treated as untrusted. Postings that try to instruct AI tools are flagged and ignored."],
@@ -265,6 +268,49 @@ function Privacy() {
       <p className="mt-6 text-[12.5px] text-faint">
         Huntly {health.data?.version}, Apache-2.0. Database {health.data?.database}. Timezone {health.data?.timezone}.
       </p>
+    </>
+  );
+}
+
+function Updates() {
+  const { s, setS, save, dirty, reset } = useSettingsForm();
+  const health = useHealth();
+  const { state, check, restart } = useUpdater();
+  const [checking, setChecking] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+  if (!s) return <Skeleton className="h-40" />;
+  return (
+    <>
+      <Group title="Automatic updates">
+        <Row
+          title="Download and install updates automatically"
+          description="Like a messaging app: new versions download quietly in the background and you choose when to restart. Updates come from the project's GitHub releases and are verified with the maintainers' signing key before installing. No personal data is sent."
+        >
+          <Switch checked={s.auto_update} onCheckedChange={(v) => setS({ ...s, auto_update: v })} />
+        </Row>
+        <Row title={`You have Huntly ${health.data?.version ?? ""}`} description={result ?? (state.kind === "downloading" ? `Downloading ${state.version}${state.progress != null ? `, ${state.progress}%` : ""}` : state.kind === "error" ? state.message : undefined)}>
+          {state.kind === "ready" ? (
+            <Button size="sm" variant="primary" onClick={() => restart()}>
+              Restart to update to {state.version}
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              loading={checking || state.kind === "downloading"}
+              onClick={async () => {
+                setChecking(true);
+                setResult(null);
+                const v = await check(true);
+                setChecking(false);
+                if (!v) setResult("You're on the latest version.");
+              }}
+            >
+              Check for updates
+            </Button>
+          )}
+        </Row>
+      </Group>
+      <SaveBar dirty={dirty} save={save} reset={reset} />
     </>
   );
 }
@@ -325,6 +371,7 @@ export default function SettingsPage() {
           {section === "ai" && <AiSettings />}
           {section === "security" && <Security />}
           {section === "privacy" && <Privacy />}
+          {section === "updates" && <Updates />}
           {section === "audit" && <AuditLog />}
         </div>
       </div>

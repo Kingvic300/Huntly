@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Download Huntly</title>
+<meta name="description" content="Huntly is a private, open-source desktop job-hunting assistant. Download it for Linux, macOS or Windows.">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<style>
+  @font-face {
+    font-family: "Schibsted Grotesk";
+    src: url("fonts/schibsted-grotesk-latin-wght-normal.woff2") format("woff2");
+    font-weight: 400 900;
+    font-display: swap;
+  }
+  :root {
+    --ink: #16191e; --panel: #1d2128; --raised: #252a33; --line: #323845; --line-strong: #434a5a;
+    --fg: #eceef2; --muted: #9aa1af; --faint: #6c7383; --act: #8fa4ff; --act-ink: #0f1430; --heat: #f2b84b;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--ink); color: var(--fg); }
+  body { margin: 0; font: 15px/1.55 "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  a { color: var(--act); }
+  :focus-visible { outline: 2px solid var(--act); outline-offset: 2px; border-radius: 6px; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+  header { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 17px; color: var(--fg); text-decoration: none; }
+  .brand img { width: 30px; height: 30px; }
+  nav a { color: var(--muted); text-decoration: none; margin-left: 22px; font-size: 14px; }
+  nav a:hover { color: var(--fg); }
+
+  .hero { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 56px; align-items: center; padding: 56px 0 72px; }
+  h1 { font-size: clamp(34px, 5vw, 52px); line-height: 1.05; letter-spacing: -0.03em; margin: 0; font-weight: 650; }
+  .lede { color: var(--muted); font-size: 17px; max-width: 46ch; margin: 18px 0 30px; }
+  .primary { display: inline-flex; align-items: center; gap: 10px; background: var(--act); color: var(--act-ink); font-weight: 600; padding: 13px 20px; border-radius: 10px; text-decoration: none; font-size: 16px; }
+  .primary:hover { background: #a3b4ff; }
+  .primary svg { width: 18px; height: 18px; }
+  .meta { color: var(--faint); font-size: 13px; margin-top: 12px; }
+  .meta a { color: var(--muted); }
+
+  /* The signature element from the app: a lead's heat. */
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+  .lead { display: grid; grid-template-columns: 64px 1fr; gap: 14px; align-items: center; padding: 12px 6px; border-bottom: 1px solid #2a2f3a; }
+  .lead:last-child { border-bottom: 0; }
+  .heat { display: flex; align-items: flex-end; gap: 3px; height: 18px; }
+  .heat i { display: block; width: 5px; border-radius: 2px; background: var(--line); }
+  .heat i.on { background: var(--heat); }
+  .heat i.mid { background: rgba(242,184,75,.65); }
+  .lead b { display: block; font-size: 14px; font-weight: 600; }
+  .lead span { color: var(--muted); font-size: 13px; }
+  .score { font-weight: 650; font-size: 14px; margin-left: 6px; color: var(--heat); }
+
+  section { padding: 56px 0; border-top: 1px solid #252a33; }
+  h2 { font-size: 24px; letter-spacing: -0.02em; margin: 0 0 6px; }
+  .sub { color: var(--muted); margin: 0 0 26px; }
+  .platforms { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .platform { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+  .platform.mine { border-color: var(--act); }
+  .platform h3 { margin: 0 0 4px; font-size: 16px; display: flex; gap: 8px; align-items: center; }
+  .platform h3 small { font-size: 11.5px; font-weight: 600; color: var(--act); background: rgba(143,164,255,.14); padding: 1px 7px; border-radius: 5px; }
+  .platform p { color: var(--muted); font-size: 13.5px; margin: 0 0 14px; }
+  .files { display: flex; flex-direction: column; gap: 6px; }
+  .file { display: flex; justify-content: space-between; gap: 10px; padding: 9px 11px; border-radius: 8px; background: var(--raised); color: var(--fg); text-decoration: none; font-size: 13.5px; }
+  .file:hover { background: #2b313b; }
+  .file em { color: var(--faint); font-style: normal; white-space: nowrap; }
+  .empty { color: var(--faint); font-size: 13.5px; }
+  .hint { color: var(--faint); font-size: 12.5px; margin-top: 10px; }
+
+  .facts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 40px; }
+  .fact { padding: 16px 0; border-bottom: 1px solid #252a33; }
+  .fact b { display: block; font-size: 15px; }
+  .fact span { color: var(--muted); font-size: 14px; }
+
+  .release { padding: 20px 0; border-bottom: 1px solid #252a33; }
+  .release header { padding: 0; }
+  .release h3 { margin: 0; font-size: 17px; }
+  .release time { color: var(--faint); font-size: 13px; }
+  .notes { color: var(--muted); font-size: 14px; white-space: pre-wrap; margin: 8px 0 10px; max-width: 75ch; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips a { font-size: 12.5px; padding: 4px 9px; border-radius: 6px; background: var(--raised); color: var(--fg); text-decoration: none; }
+  .chips a:hover { background: #2b313b; }
+  footer { color: var(--faint); font-size: 13px; padding: 36px 0 60px; border-top: 1px solid #252a33; }
+
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; gap: 36px; padding-top: 28px; }
+    .platforms, .facts { grid-template-columns: 1fr; }
+    nav a:not(:last-child) { display: none; }
+  }
+  @media (prefers-reduced-motion: no-preference) { .file, .primary, .chips a { transition: background .15s; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="brand" href="./"><img src="logo.svg" alt="">Huntly</a>
+    <nav><a href="#download">Download</a><a href="#releases">Releases</a><a href="https://github.com/Kingvic300/Huntly">Source code</a></nav>
+  </header>
+
+  <div class="hero">
+    <div>
+      <h1>Find work without handing your data to anyone.</h1>
+      <p class="lede">Huntly searches the job sources you choose, ranks every job against your profile, tailors ATS-friendly CVs, and drafts applications you approve. It runs entirely on your computer.</p>
+      <a id="cta" class="primary" href="https://github.com/Kingvic300/Huntly/releases/latest">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>
+        <span id="cta-label">Download Huntly</span>
+      </a>
+      <p class="meta" id="cta-meta">Free and open source. Linux, macOS and Windows.</p>
+    </div>
+    <div class="card" aria-label="Example of how Huntly ranks jobs">
+      <div class="lead"><div><span class="heat"><i class="on" style="height:40%"></i><i class="on" style="height:55%"></i><i class="on" style="height:70%"></i><i class="on" style="height:85%"></i><i class="on" style="height:100%"></i></span></div><div><b>Backend Engineer <span class="score">91</span></b><span>Remote, matches 7 of your skills</span></div></div>
+      <div class="lead"><div><span class="heat"><i class="mid" style="height:40%"></i><i class="mid" style="height:55%"></i><i class="mid" style="height:70%"></i><i style="height:85%"></i><i style="height:100%"></i></span></div><div><b>Python Developer <span class="score" style="color:var(--fg)">63</span></b><span>Lagos, title partly matches</span></div></div>
+      <div class="lead"><div><span class="heat"><i class="mid" style="height:40%;opacity:.5"></i><i style="height:55%"></i><i style="height:70%"></i><i style="height:85%"></i><i style="height:100%"></i></span></div><div><b>Sales Manager <span class="score" style="color:var(--muted)">12</span></b><span>Not your field, ranked last</span></div></div>
+    </div>
+  </div>
+</div>
+
+<section id="download">
+  <div class="wrap">
+    <h2>Download</h2>
+    <p class="sub" id="version-line">Pick the installer for your computer.</p>
+    <div class="platforms">
+      <div class="platform" data-os="linux"><h3>Linux</h3><p>Debian, Ubuntu and Kali, or any distribution with the AppImage.</p><div class="files"></div></div>
+      <div class="platform" data-os="mac"><h3>macOS</h3><p>Apple silicon and Intel. macOS 11 or later.</p><div class="files"></div><p class="hint">First launch: right-click Huntly in Applications and choose Open.</p></div>
+      <div class="platform" data-os="windows"><h3>Windows</h3><p>Windows 10 and 11, 64-bit.</p><div class="files"></div><p class="hint">If SmartScreen warns you, choose More info, then Run anyway.</p></div>
+    </div>
+    <p class="hint" style="margin-top:18px">Already installed? Huntly updates itself: new versions download in the background and you restart when it suits you.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap facts">
+    <div class="fact"><b>Your data stays on your computer</b><span>Jobs, CVs and history live in a local folder. There is no Huntly server.</span></div>
+    <div class="fact"><b>You bring your own keys</b><span>Google, X and Groq credentials are encrypted with your master password.</span></div>
+    <div class="fact"><b>Nothing is sent without you</b><span>Every application email waits for your explicit approval.</span></div>
+    <div class="fact"><b>No telemetry</b><span>No analytics or crash reports. Read the code to check.</span></div>
+  </div>
+</section>
+
+<section id="releases">
+  <div class="wrap">
+    <h2>Releases</h2>
+    <p class="sub">What changed in each version.</p>
+    <div id="release-list"><p class="empty">Loading releases…</p></div>
+  </div>
+</section>
+
+<div class="wrap"><footer>Huntly is Apache-2.0 licensed. <a href="https://github.com/Kingvic300/Huntly">Source on GitHub</a>. This page fetches the release list straight from GitHub; it has no analytics.</footer></div>
+
+<script>
+(() => {
+  const REPO = "Kingvic300/Huntly";
+  const ua = navigator.userAgent.toLowerCase();
+  const os = /windows/.test(ua) ? "windows" : /mac os|macintosh/.test(ua) ? "mac" : /linux|x11/.test(ua) ? "linux" : null;
+  const LABEL = { linux: "Linux", mac: "macOS", windows: "Windows" };
+
+  function classify(name) {
+    const n = name.toLowerCase();
+    if (n.endsWith(".sig") || n.endsWith(".json") || n.endsWith(".tar.gz") || n.endsWith(".zip")) return null; // updater files
+    if (n.endsWith(".deb")) return { os: "linux", label: "Debian / Ubuntu / Kali (.deb)", rank: 1 };
+    if (n.endsWith(".appimage")) return { os: "linux", label: "AppImage, any distribution", rank: 2 };
+    if (n.endsWith(".rpm")) return { os: "linux", label: "Fedora / openSUSE (.rpm)", rank: 3 };
+    if (n.endsWith(".dmg")) return { os: "mac", label: n.includes("aarch64") ? "Apple silicon (M1 and later)" : "Intel", rank: n.includes("aarch64") ? 1 : 2 };
+    if (n.endsWith("-setup.exe")) return { os: "windows", label: "Installer (.exe)", rank: 1 };
+    if (n.endsWith(".msi")) return { os: "windows", label: "Installer for IT-managed PCs (.msi)", rank: 2 };
+    return null;
+  }
+  const size = (b) => (b > 1048576 ? (b / 1048576).toFixed(0) + " MB" : Math.ceil(b / 1024) + " KB");
+  const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  if (os) document.querySelector(`.platform[data-os="${os}"]`).classList.add("mine"),
+    document.querySelector(`.platform[data-os="${os}"] h3`).insertAdjacentHTML("beforeend", "<small>Your system</small>");
+
+  fetch(`https://api.github.com/repos/${REPO}/releases?per_page=10`, { headers: { Accept: "application/vnd.github+json" } })
+    .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+    .then((releases) => {
+      releases = releases.filter((r) => !r.draft);
+      const latest = releases.find((r) => !r.prerelease);
+      if (!latest) throw new Error("none");
+      document.getElementById("version-line").textContent = `Huntly ${latest.tag_name.replace(/^v/, "")}, released ${new Date(latest.published_at).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" })}.`;
+
+      const groups = { linux: [], mac: [], windows: [] };
+      for (const a of latest.assets) {
+        const c = classify(a.name);
+        if (c) groups[c.os].push({ ...c, url: a.browser_download_url, size: a.size });
+      }
+      for (const [k, files] of Object.entries(groups)) {
+        files.sort((x, y) => x.rank - y.rank);
+        document.querySelector(`.platform[data-os="${k}"] .files`).innerHTML = files.length
+          ? files.map((f) => `<a class="file" href="${f.url}">${esc(f.label)}<em>${size(f.size)}</em></a>`).join("")
+          : `<p class="empty">Not available in this release yet.</p>`;
+      }
+      if (os && groups[os].length) {
+        const best = groups[os][0];
+        document.getElementById("cta").href = best.url;
+        document.getElementById("cta-label").textContent = `Download for ${LABEL[os]}`;
+        document.getElementById("cta-meta").innerHTML = `${esc(best.label)}, ${size(best.size)}. <a href="#download">Other systems</a>`;
+      }
+
+      document.getElementById("release-list").innerHTML = releases
+        .map((r) => {
+          const files = r.assets.map((a) => ({ a, c: classify(a.name) })).filter((x) => x.c);
+          return `<article class="release">
+            <header><h3>${esc(r.name || r.tag_name)}</h3><time datetime="${r.published_at}">${new Date(r.published_at).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}</time></header>
+            ${r.body ? `<div class="notes">${esc(r.body.trim())}</div>` : ""}
+            <div class="chips">${files.map(({ a, c }) => `<a href="${a.browser_download_url}">${LABEL[c.os]}: ${esc(c.label)}</a>`).join("")}<a href="${r.html_url}">All files</a></div>
+          </article>`;
+        })
+        .join("");
+    })
+    .catch(() => {
+      document.getElementById("release-list").innerHTML = `<p class="empty">Couldn't load releases right now. <a href="https://github.com/${REPO}/releases">See them on GitHub</a>.</p>`;
+      document.querySelectorAll(".files").forEach((el) => (el.innerHTML = `<a class="file" href="https://github.com/${REPO}/releases/latest">Open the latest release<em>GitHub</em></a>`));
+    });
+})();
+</script>
+</body>
+</html>
