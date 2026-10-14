@@ -92,6 +92,8 @@ def vault_create(body: CreateVault, ctx: AppContext = Depends(get_ctx)):
             warning = f"OS keychain unavailable ({type(exc).__name__}); you will be asked for the master password at start-up."
     with ctx.db.session() as s:
         store.audit(s, "user", "vault.created", "vault", keyring=body.use_keyring and not warning)
+        # The remaining setup steps are optional; setup never has to be repeated once the vault exists.
+        store.set_setting(s, "onboarding_complete", True)
     return {"ok": True, "warning": warning}
 
 

@@ -31,6 +31,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--log-level", default=os.environ.get("HUNTLY_LOG_LEVEL", "INFO"))
     args = parser.parse_args(argv)
 
+    # Files Huntly creates (database, WAL, logs, documents) are private to this user.
+    if sys.platform != "win32":
+        os.umask(0o077)
     paths = get_paths()
     configure_logging(paths.logs, args.log_level)
 

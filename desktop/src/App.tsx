@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, ServerCrash } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { AppShell } from "./components/layout/AppShell";
@@ -46,6 +46,7 @@ export function Splash({ label }: { label: string }) {
 }
 
 function Gate() {
+  const [setupSession, setSetupSession] = useState(false);
   const status = useQuery({
     queryKey: qk.onboarding,
     queryFn: () => api<OnboardingStatus>("/onboarding/status"),
@@ -55,6 +56,29 @@ function Gate() {
   });
   const qc = useQueryClient();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const onKey = async (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+      const k = e.key.toLowerCase();
+      if (k !== "r" && k !== "l") return;
+      e.preventDefault();
+      try {
+        if (k === "r") {
+          await api("/collect", { method: "POST", json: {} });
+          toast.success("Searching your sources now");
+          qc.invalidateQueries({ queryKey: qk.scheduler });
+        } else {
+          await api("/vault/lock", { method: "POST" });
+          qc.invalidateQueries();
+        }
+      } catch (err) {
+        toast.error((err as Error).message);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [qc]);
 
   useEffect(() => {
     const subs: Promise<() => void>[] = [
@@ -77,13 +101,13 @@ function Gate() {
     return () => subs.forEach((p) => p.then((un) => un()));
   }, [navigate, qc]);
 
+  if (status.data && !status.data.vault_initialized && !setupSession) setSetupSession(true);
   if (status.isPending) return <Splash label="Loading…" />;
   if (status.isError) return <Splash label={`${(status.error as Error).message}. Reconnecting…`} />;
   const s = status.data;
-  if (!s.vault_initialized || !s.onboarding_complete) {
-    if (s.vault_initialized && !s.vault_unlocked) return <Unlock />;
-    return <Onboarding status={s} />;
-  }
+  // Setup runs once: until the vault exists, or while finishing the wizard in the session
+  // that created it. Later launches go straight to unlock and the app.
+  if (!s.vault_initialized || setupSession) return <Onboarding status={s} onFinish={() => setSetupSession(false)} />;
   if (!s.vault_unlocked) return <Unlock />;
   return (
     <AppShell>

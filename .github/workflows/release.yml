@@ -19,7 +19,7 @@ jobs:
             bundles: deb,appimage,rpm
           - platform: macos-14       # Apple silicon
             bundles: dmg,app
-          - platform: macos-13       # Intel
+          - platform: macos-15-intel # Intel
             bundles: dmg,app
           - platform: windows-latest
             bundles: nsis,msi

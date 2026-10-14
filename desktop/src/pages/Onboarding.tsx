@@ -177,10 +177,16 @@ function ProfileStep() {
   );
 }
 
-export default function Onboarding({ status }: { status: OnboardingStatus }) {
+export default function Onboarding({ status, onFinish }: { status: OnboardingStatus; onFinish: () => void }) {
   const [step, setStep] = useState(status.vault_initialized ? 2 : 0);
   const qc = useQueryClient();
-  const finish = useAction(() => api("/onboarding/complete", { method: "POST" }), { success: "You're set up", onSuccess: () => qc.invalidateQueries() });
+  const finish = useAction(() => api("/onboarding/complete", { method: "POST" }), {
+    success: "You're set up",
+    onSuccess: () => {
+      onFinish();
+      qc.invalidateQueries();
+    },
+  });
   const blocked = step === 1 && !status.vault_initialized;
   const last = step === STEPS.length - 1;
 

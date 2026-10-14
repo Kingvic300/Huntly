@@ -93,7 +93,7 @@ def test_honest_llm_wording_is_used_and_ats_report_present(with_profile, monkeyp
     assert ats["coverage"] == 100 and ats["score"] > 70
     with ctx.db.session() as s:
         doc = s.get(Document, out["cv_document_id"])
-        assert doc.path.split("/")[-1].startswith("Ada-Example-CV-Example-Corp")
+        assert Path(doc.path).name.startswith("Ada-Example-CV-Example-Corp")
 
 
 def _prepared(ctx):
@@ -178,6 +178,6 @@ def test_rejected_cannot_be_sent(with_profile, fake_gmail):
 def test_background_code_never_sends_applications():
     root = Path(__file__).resolve().parents[1] / "huntly"
     for name in ("scheduler.py", "services/collector.py", "services/digest.py"):
-        text = (root / name).read_text()
+        text = (root / name).read_text(encoding="utf-8")
         assert "send_draft" not in text and "applications" not in text.split("import")[0]
         assert "svc.send" not in text and "approve(" not in text

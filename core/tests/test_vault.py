@@ -1,4 +1,5 @@
 import json
+import sys
 
 import pytest
 
@@ -30,7 +31,7 @@ def test_short_password_rejected(tmp_path):
 def test_vault_file_has_no_key_material_in_clear(tmp_path):
     v = Vault(tmp_path / "vault.json", FAST_KDF)
     v.create(PASSWORD)
-    raw = (tmp_path / "vault.json").read_text()
+    raw = (tmp_path / "vault.json").read_text(encoding="utf-8")
     data = json.loads(raw)
     assert data["cipher"] == "AES-256-GCM"
     assert data["kdf"]["name"] == "argon2id"
@@ -38,7 +39,8 @@ def test_vault_file_has_no_key_material_in_clear(tmp_path):
     import base64
 
     assert base64.b64encode(v.dek()).decode() not in raw
-    assert oct((tmp_path / "vault.json").stat().st_mode)[-3:] == "600"
+    if sys.platform != "win32":  # POSIX permissions; Windows relies on the per-user profile ACL
+        assert oct((tmp_path / "vault.json").stat().st_mode)[-3:] == "600"
 
 
 def test_secret_roundtrip_and_aad_binding(tmp_path):

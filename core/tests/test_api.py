@@ -33,6 +33,7 @@ def test_onboarding_flow_encrypts_credentials(client, ctx):
     assert client.put("/api/credentials/groq_api_key", json={"value": "gsk_placeholder"}).status_code == 423
     assert client.post("/api/vault/create", json={"password": "short"}).status_code == 400
     assert client.post("/api/vault/create", json={"password": PASSWORD}).status_code == 200
+    assert client.get("/api/onboarding/status").json()["onboarding_complete"]  # setup never repeats
 
     secret = "gsk_" + "OnboardingSecretValue123456"  # split so the source scan stays clean
     assert client.put("/api/credentials/groq_api_key", json={"value": secret}).status_code == 200

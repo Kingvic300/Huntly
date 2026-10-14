@@ -75,8 +75,14 @@ pub fn run() {
                 *handle.state::<core::CoreState>().error.lock().unwrap() = Some(e);
             }
 
-            let menu = build_menu(&handle)?;
-            app.set_menu(menu)?;
+            // Linux and Windows: no menu bar; every action has an in-app shortcut.
+            // macOS keeps a minimal menu because copy/paste shortcuts depend on it there.
+            if cfg!(target_os = "macos") {
+                let menu = build_menu(&handle)?;
+                app.set_menu(menu)?;
+            } else {
+                app.remove_menu()?;
+            }
             app.on_menu_event(|app, event| {
                 let id = event.id().as_ref();
                 match id {

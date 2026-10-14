@@ -108,7 +108,7 @@ def test_no_secrets_committed_to_source():
         path = REPO / rel
         if not path.is_file() or "__pycache__" in path.parts or path.suffix in {".ttf", ".png", ".ico", ".icns", ".lock", ".pyc"} or path.stat().st_size > 2_000_000:
             continue
-        text = path.read_text(errors="ignore")
+        text = path.read_text(encoding="utf-8", errors="ignore")
         for p in patterns:
             assert not p.search(text), f"possible secret in {rel}"
 
@@ -122,5 +122,5 @@ def test_core_has_no_telemetry_endpoints():
         "linkedin.com",  # example text in a validation message, not a request
     }
     for f in core.rglob("*.py"):
-        for host in re.findall(r"https?://([a-zA-Z0-9.-]+)", f.read_text()):
+        for host in re.findall(r"https?://([a-zA-Z0-9.-]+)", f.read_text(encoding="utf-8")):
             assert host in allowed_hosts, f"unexpected outbound host {host} in {f.name}"
