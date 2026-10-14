@@ -90,17 +90,17 @@ the SHA-256 shown on the release page.
 **Linux (Debian, Ubuntu, Kali)**
 
 ```bash
-sudo apt install ./Huntly_0.1.0_amd64.deb
+sudo apt install ./Huntly_0.1.1_amd64.deb
 ```
 
 Or, on any distribution, make the AppImage executable and run it:
-`chmod +x Huntly_0.1.0_amd64.AppImage && ./Huntly_0.1.0_amd64.AppImage`.
+`chmod +x Huntly_0.1.1_amd64.AppImage && ./Huntly_0.1.1_amd64.AppImage`.
 
 **macOS** (`aarch64` for Apple silicon, `x64` for Intel): open the `.dmg` and drag Huntly to
 Applications. The app is not code-signed yet, so the first time, right-click it and choose
 **Open**, or run `xattr -dr com.apple.quarantine /Applications/Huntly.app`.
 
-**Windows**: run `Huntly_0.1.0_x64-setup.exe`. It is not code-signed yet, so SmartScreen may
+**Windows**: run `Huntly_0.1.1_x64-setup.exe`. It is not code-signed yet, so SmartScreen may
 warn you: choose **More info → Run anyway**.
 
 ### Build from source
