@@ -90,3 +90,15 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: --bundles ${{ matrix.bundles }}
+
+  notes:
+    # After every platform has uploaded, turn the flat file list into a per-platform table.
+    needs: build
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Write download table into the release notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/release_notes.py "${{ github.ref_name }}"
