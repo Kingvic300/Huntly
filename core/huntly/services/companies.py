@@ -137,7 +137,7 @@ def probe(name: str, sctx: SourceContext) -> tuple[str, str, str] | None:
                 continue
             if jobs:
                 # Some platforms only return the board name; the name we looked up reads better.
-                company = jobs[0].company or ""
+                company = " ".join((jobs[0].company or "").split())
                 return platform, slug, company if company.lower() not in ("", slug) else name
     return None
 

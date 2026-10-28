@@ -214,3 +214,165 @@ X-Team
 Yoast
 Zapier
 Zendesk
+
+# More African employers
+Aella Credit
+Afriex
+Africa's Talking
+Anchor
+Babban Gona
+Bankly
+Bloc
+Bolt
+Chaka
+Dojah
+eTranzact
+Eversend
+Farmcrowdy
+Fawry
+Field Intelligence
+Gebeya
+Gro Intelligence
+Hello Tractor
+InstaDeep
+Jumo
+Kasha
+Kopo Kopo
+Lipa Later
+MarketForce
+Maplerad
+Mukuru
+MNT-Halan
+Naspers
+Nomba
+OLX
+Orda
+Ozow
+Peach Payments
+Pngme
+Prembly
+Prosus
+Releaf
+Remitly
+Sendy
+Shortlist
+Smile ID
+Stitch
+Sudo Africa
+Swvl
+Tala
+ThriveAgric
+TymeBank
+Union54
+VALR
+Vezeeta
+Yassir
+Youverify
+Zepz
+Zoona
+
+# More remote-first and remote-friendly employers
+Affirm
+Algolia
+Anyscale
+Arc
+Attio
+Brilliant
+Cal.com
+Carta
+Census
+Chainalysis
+CircleCI
+ClassDojo
+Clerk
+Codecademy
+Contentful
+Convex
+Crypto.com
+Dagster
+DataCamp
+Descript
+DoorDash
+Drata
+Dub
+Epic Games
+Etsy
+Eventbrite
+Front
+Glean
+Grammarly
+Harvey
+Headspace
+Hex
+Hims & Hers
+Inngest
+Instacart
+Jasper
+Khan Academy
+Kickstarter
+LangChain
+LaunchDarkly
+LlamaIndex
+Lovable
+Lyft
+Lyra Health
+Medium
+Metabase
+Modal
+Multiplier
+Neon
+Netflix
+New Relic
+Niantic
+Noom
+OKX
+Oscar Health
+PagerDuty
+Palantir
+Papaya Global
+Patreon
+Peloton
+Perplexity
+Pinecone
+PlanetScale
+Pitch
+Plain
+Pluralsight
+Postman
+Prefect
+Pylon
+Quizlet
+Raycast
+Resend
+Retool
+Riot Games
+Roblox
+Runway
+SentinelOne
+Snyk
+SoFi
+Spring Health
+Squarespace
+Substack
+Sumo Logic
+Superhuman
+Synthesia
+Tines
+Trigger.dev
+Turso
+Udacity
+Unity
+Upwork
+Vanta
+Velocity Global
+Warp
+Watershed
+Wayfair
+Wealthsimple
+Weaviate
+Wiz
+WorkOS
+Writer
+Yelp
+Zed
+Zillow
