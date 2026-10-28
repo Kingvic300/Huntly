@@ -2,7 +2,7 @@
 
 The model is used for two narrow, advisory tasks only:
 1. a short fit assessment of a job against the profile, and
-2. rephrasing profile-supplied facts for a cover letter.
+2. rephrasing profile-supplied facts for a CV (summary, achievement bullets) and cover letter.
 
 Job content is always passed as fenced, untrusted data. Output must be JSON,
 is validated and clamped, and can never trigger an action (no tools, no sending).
@@ -123,3 +123,27 @@ class GroqClient:
         if not isinstance(summary, str) or not summary.strip():
             raise LLMError("Groq returned no summary")
         return summary.strip()[:800]
+
+    def tailored_highlights(self, roles: list[dict], job_title: str, company: str, job_text: str) -> list[list[str]]:
+        """Reword each role's achievement bullets for the job. One bullet in, one bullet out, same order."""
+        user = (
+            "Reword the achievement bullets of each role below so they speak to this job. Each new bullet must say the "
+            "same thing as the bullet it replaces: keep its facts, numbers and tools, and do not add tools, skills, numbers, "
+            "employers, team sizes or results that are not in that bullet. Use the job's own wording only where it means the "
+            "same thing. Start with an action verb in the same tense as the original. Return the same number of bullets per "
+            'role, in the same order. Return JSON: {"roles": [{"highlights": ["...", "..."]}]} with one entry per role, '
+            "in the order given.\n\n"
+            f"CANDIDATE ROLES (trusted):\n{json.dumps(roles, ensure_ascii=False)[:6000]}\n\n"
+            f"{fence_untrusted('JOB_TITLE', job_title, 300)}\n{fence_untrusted('COMPANY', company, 200)}\n"
+            f"{fence_untrusted('JOB_POSTING', job_text, 5000)}"
+        )
+        data = self._chat(GUARD, user, max_tokens=1800)
+        out = data.get("roles")
+        if not isinstance(out, list):
+            raise LLMError("Groq returned no bullets")
+        result = []
+        for r in out[: len(roles)]:
+            bullets = r.get("highlights") if isinstance(r, dict) else None
+            ok = isinstance(bullets, list) and all(isinstance(b, str) for b in bullets)
+            result.append([b.strip()[:400] for b in bullets] if ok else [])
+        return result

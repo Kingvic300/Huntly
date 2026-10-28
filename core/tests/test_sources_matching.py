@@ -53,6 +53,46 @@ def test_greenhouse_lever_career(fake_fetch):
     assert cp.title == "Platform Engineer" and cp.remote and cp.company == "Example"
 
 
+REMOTEOK = [
+    {"legal": "API Terms of Service: link back to Remote OK"},
+    {"id": "11", "position": "Python Engineer", "company": "Acme", "tags": ["python", "dev"], "description": "<p>Python &amp; AWS</p>", "location": "", "date": "2026-10-26T08:00:12+00:00", "url": "https://remoteOK.com/remote-jobs/11"},
+    {"id": "12", "position": "Account Executive", "company": "Huzzle", "tags": ["sales"], "description": "Sell", "url": "https://remoteOK.com/remote-jobs/12"},
+]
+HIMALAYAS = {"jobs": [{"title": "Backend Engineer", "companyName": "Invest", "description": "<p>Python</p>", "locationRestrictions": ["Nigeria", "Kenya"], "pubDate": 1792448523, "applicationLink": "https://himalayas.app/companies/invest/jobs/be?utm_source=api", "guid": "https://himalayas.app/companies/invest/jobs/be"}]}
+JOBICY = {"jobs": [{"id": 157533, "url": "https://jobicy.com/jobs/157533-hpc", "jobTitle": "Senior HPC &amp; Systems Engineer", "companyName": "Nebius", "jobGeo": "Europe", "jobDescription": "<p>Linux</p>", "pubDate": "2026-10-28T12:54:42+00:00"}]}
+ASHBY = {"jobs": [
+    {"id": "a1", "title": "Engineering Manager", "location": "Remote - EU", "isRemote": True, "isListed": True, "publishedAt": "2024-03-04T14:29:08.532+00:00", "jobUrl": "https://jobs.ashbyhq.com/acme/a1", "descriptionPlain": "Lead a team"},
+    {"id": "a2", "title": "Hidden", "isListed": False, "jobUrl": "https://jobs.ashbyhq.com/acme/a2"},
+]}
+
+
+def test_remote_boards_and_ashby(fake_fetch):
+    fake_fetch.routes["https://remoteok.com/api"] = (200, REMOTEOK)
+    fake_fetch.routes["https://himalayas.app/jobs/api/search"] = (200, HIMALAYAS)
+    fake_fetch.routes["https://jobicy.com/api/v2/remote-jobs"] = (200, JOBICY)
+    fake_fetch.routes["https://api.ashbyhq.com/posting-api/job-board/acme"] = (200, ASHBY)
+    ctx = _ctx(fake_fetch)
+
+    all_ok = SOURCES["remoteok"].fetch(SOURCES["remoteok"].validate({}), ctx)
+    assert [j.title for j in all_ok] == ["Python Engineer", "Account Executive"]  # legal notice skipped
+    ro = SOURCES["remoteok"].fetch(SOURCES["remoteok"].validate({"search": "python"}), ctx)
+    assert len(ro) == 1 and ro[0].normalized().remote and ro[0].url.startswith("https://remoteOK.com/")
+
+    hm = SOURCES["himalayas"].fetch(SOURCES["himalayas"].validate({"search": "backend"}), ctx)[0].normalized()
+    assert hm.company == "Invest" and hm.location == "Nigeria, Kenya" and hm.posted_at.year == 2026
+    assert fake_fetch.calls[-1][2] == {"q": "backend"}
+
+    cfg = SOURCES["jobicy"].validate({"tag": "linux", "geo": "Europe", "count": 500})
+    assert cfg["count"] == 100 and cfg["geo"] == "europe"
+    jc = SOURCES["jobicy"].fetch(cfg, ctx)[0].normalized()
+    assert jc.title == "Senior HPC & Systems Engineer" and jc.location == "Europe"
+    with pytest.raises(ValueError):
+        SOURCES["jobicy"].validate({"geo": "../x"})
+
+    ab = SOURCES["ashby"].fetch(SOURCES["ashby"].validate({"board": "acme"}), ctx)
+    assert [j.title for j in ab] == ["Engineering Manager"] and ab[0].remote and ab[0].external_id == "ashby:acme:a1"
+
+
 def test_board_slug_validation():
     with pytest.raises(ValueError):
         SOURCES["greenhouse"].validate({"board": "../../etc"})

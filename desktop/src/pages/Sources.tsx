@@ -14,7 +14,11 @@ const BLURB: Record<string, string> = {
   x_search: "Posts on X that match a search",
   greenhouse: "A company's Greenhouse job board",
   lever: "A company's Lever job board",
+  ashby: "A company's Ashby job board",
   remotive: "Remote jobs from Remotive",
+  remoteok: "Remote jobs from Remote OK",
+  himalayas: "Remote jobs from Himalayas",
+  jobicy: "Remote jobs from Jobicy",
   arbeitnow: "Jobs from the Arbeitnow board",
   career_page: "A careers page that publishes job data",
 };

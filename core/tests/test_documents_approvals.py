@@ -6,7 +6,7 @@ import pytest
 from huntly.models import Application, Document, EmailApproval, Job
 from huntly.services import applications as svc
 from huntly.services import store
-from huntly.services.documents import find_fabrications
+from huntly.services.documents import apply_highlight_rewrites, bullet_fabrications, find_fabrications, tailor
 from huntly.services.llm import GroqClient
 
 
@@ -62,6 +62,9 @@ class FabricatingGroq(GroqClient):
     def tailored_summary(self, *a, **k):
         return "Backend engineer with 12 years at Microsoft."
 
+    def tailored_highlights(self, *a, **k):
+        return [["Built payment APIs in Python, FastAPI and Kubernetes", "Cut deploy time by 80% by moving to Docker"]]
+
 
 class HonestGroq(GroqClient):
     def __init__(self):
@@ -73,6 +76,9 @@ class HonestGroq(GroqClient):
     def tailored_summary(self, *a, **k):
         return "Backend Engineer who built payment APIs in Python and FastAPI."
 
+    def tailored_highlights(self, *a, **k):
+        return [["Developed payment APIs with Python and FastAPI", "Reduced deploy time by moving services to Docker"]]
+
 
 def test_llm_fabrication_is_discarded(with_profile, monkeypatch):
     ctx = with_profile
@@ -80,7 +86,10 @@ def test_llm_fabrication_is_discarded(with_profile, monkeypatch):
     app_id = _job(ctx)
     out = svc.generate_documents(ctx, app_id, "pdf")
     assert out["source"] == "template"
-    assert sum("discarded" in w for w in out["warnings"]) == 2
+    assert sum("discarded" in w for w in out["warnings"]) == 3
+    assert any("2 of 2 achievement bullets" in w and "Kubernetes" in w and "80%" in w for w in out["warnings"])
+    with ctx.db.session() as s:
+        assert s.get(Document, out["cv_document_id"]).meta["highlights_source"] == "profile"
 
 
 def test_honest_llm_wording_is_used_and_ats_report_present(with_profile, monkeypatch):
@@ -94,6 +103,26 @@ def test_honest_llm_wording_is_used_and_ats_report_present(with_profile, monkeyp
     with ctx.db.session() as s:
         doc = s.get(Document, out["cv_document_id"])
         assert Path(doc.path).name.startswith("Ada-Example-CV-Example-Corp")
+        assert doc.meta["highlights_source"] == "groq"
+
+
+def test_bullet_rewrites_cannot_add_or_move_facts():
+    from .conftest import SAMPLE_PROFILE
+
+    role = SAMPLE_PROFILE.experience[0]
+    original = "Cut deploy time by moving to Docker"
+    assert bullet_fabrications("Reduced deploy time by moving services to Docker", original, role, SAMPLE_PROFILE) == []
+    assert bullet_fabrications("Cut deploy time by 40% with docker and kubernetes", original, role, SAMPLE_PROFILE) == ["40%", "Kubernetes"]
+    # A skill the user has, but not in this bullet, may not be moved into it.
+    assert bullet_fabrications("Cut deploy time by moving to Docker on AWS", original, role, SAMPLE_PROFILE) == ["AWS"]
+
+    t = tailor(SAMPLE_PROFILE, "Backend Engineer", "Docker")
+    used, offered, problems = apply_highlight_rewrites(t, [["Shipped Docker builds 3x faster", "Built payment APIs in Python and FastAPI"]], "Docker")
+    assert (used, offered, problems) == (1, 2, ["3"])
+    assert t.experience[0].highlights == ["Cut deploy time by moving to Docker", "Built payment APIs in Python and FastAPI"]
+    # A reply with the wrong number of bullets leaves the role untouched.
+    t = tailor(SAMPLE_PROFILE, "Backend Engineer", "Docker")
+    assert apply_highlight_rewrites(t, [["Only one bullet"]], "Docker") == (0, 0, [])
 
 
 def _prepared(ctx):

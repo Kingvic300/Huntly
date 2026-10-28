@@ -117,9 +117,11 @@ def test_core_has_no_telemetry_endpoints():
     core = REPO / "core" / "huntly"
     allowed_hosts = {
         "api.x.com", "boards-api.greenhouse.io", "api.lever.co", "remotive.com", "www.arbeitnow.com",
+        "remoteok.com", "himalayas.app", "jobicy.com", "api.ashbyhq.com", "developers.ashbyhq.com",
         "api.groq.com", "www.googleapis.com", "x.com", "remotive.com", "github.com", "docs.x.com", "developers.greenhouse.io", "www.arbeitnow.com",
         "localhost", "127.0.0.1", "tauri.localhost",  # loopback only (CORS allow-list)
         "linkedin.com",  # example text in a validation message, not a request
+        "weworkremotely.com",  # example feed URL in a form placeholder, not a request
     }
     for f in core.rglob("*.py"):
         for host in re.findall(r"https?://([a-zA-Z0-9.-]+)", f.read_text(encoding="utf-8")):

@@ -37,11 +37,11 @@ Licensed under [Apache-2.0](LICENSE).
 | Screen | What it does |
 | --- | --- |
 | **Today** | A one-line briefing, your pipeline at a glance, strongest leads, and a "Needs you" list (emails to approve, follow-ups due, failing sources, profile gaps). |
-| **Discover** | Keyboard triage (<kbd>J</kbd>/<kbd>K</kbd> move, <kbd>S</kbd> shortlist, <kbd>D</kbd> dismiss, <kbd>A</kbd> apply, <kbd>O</kbd> open). Every job shows a heat meter and an explainable score breakdown. Prompt-injection attempts in postings are flagged. |
+| **Discover** | Keyboard triage (<kbd>J</kbd>/<kbd>K</kbd> move, <kbd>S</kbd> shortlist, <kbd>D</kbd> dismiss, <kbd>A</kbd> apply, <kbd>O</kbd> open). Every job shows a heat meter and an explainable score breakdown. **Tailor for this job** starts the application and makes the CV and cover letter in one click. Prompt-injection attempts in postings are flagged. |
 | **Applications** | A board by stage. Each application walks you through making an ATS-friendly CV and cover letter, writing the email, and approving it, with an ATS readiness report and notes. |
 | **Approvals** | The email exactly as the recipient will see it, a checklist you tick before approving, time-limited approval, Gmail drafts, reply status and follow-ups. |
 | **Profile** | Import your existing CV (PDF/Word, parsed locally), then edit every section: contact details including LinkedIn, GitHub and website, experience, education, projects and preferences. Plus your file library. |
-| **Sources** | RSS/Atom, Greenhouse, Lever, Remotive, Arbeitnow, company career pages (schema.org `JobPosting`), X recent search. Health, last run and errors per source. |
+| **Sources** | RSS/Atom, Greenhouse, Lever, Ashby, Remotive, Remote OK, Himalayas, Jobicy, Arbeitnow, company career pages (schema.org `JobPosting`), X recent search. Health, last run and errors per source. |
 | **Insights** | Found vs applied over time, match distribution, where applications stand, jobs per source, demand for your skills. |
 | **Settings** | Search interval, digest time (Africa/Lagos), reply tracking and follow-up timing, AI options, approval expiry, accounts and keys, vault, privacy, activity log. |
 
@@ -54,8 +54,10 @@ system-tray icon (show, search now, quit). Global search: <kbd>Ctrl</kbd>+<kbd>K
   (pypdf / python-docx) and maps it to profile fields with rules, so every value comes from
   your document. You review each field before anything is saved.
 - **Tailor:** for each job, skills and achievements the posting asks for move to the top.
-  With Groq enabled, the summary and cover letter can be reworded for the job; any AI
-  wording that mentions something not in your profile is discarded automatically.
+  With Groq enabled, the summary, achievement bullets and cover letter are reworded for the
+  job; any AI wording that mentions something not in your profile is discarded automatically.
+  Bullets are checked one by one: a reworded bullet may only use numbers, names and skills
+  from the bullet it replaces, so facts never move between roles.
 - **ATS-friendly:** one column, no tables, images or text boxes, standard headings
   (Summary, Skills, Work Experience, Education), contact details and LinkedIn as plain text,
   real selectable text, PDF metadata and a file name with your name in it.
@@ -158,11 +160,21 @@ All optional — enable only what you use.
 | Lever | `api.lever.co/v0/postings/{company}` | Public Postings API. |
 | Remotive | `remotive.com/api/remote-jobs` | Public API; links back to Remotive as required. |
 | Arbeitnow | `arbeitnow.com/api/job-board-api` | Public API. |
+| Remote OK | `remoteok.com/api` | Public API; jobs link back to Remote OK and name it as the source, as its terms require. |
+| Himalayas | `himalayas.app/jobs/api` | Public API; jobs link back to Himalayas. |
+| Jobicy | `jobicy.com/api/v2/remote-jobs` | Public API; jobs link to the original Jobicy listing, as its terms require. |
+| Ashby | `api.ashbyhq.com/posting-api/job-board/{board}` | Public Job Postings API for companies hiring through Ashby. |
 | Career page | any URL | Reads only schema.org `JobPosting` JSON-LD the site publishes. No scraping, no JS. |
 | X recent search | `api.x.com/2/tweets/search/recent` | Your bearer token; retweets excluded. |
 
 All fetches go through an SSRF guard (http/https only, public addresses only, re-checked on
 every redirect, size and time limits). Respect each site's terms of service.
+
+We Work Remotely publishes RSS feeds (for example
+`https://weworkremotely.com/categories/remote-programming-jobs.rss`); add them as an RSS source.
+Some boards have no official API or feed, and their terms or `robots.txt` forbid automated
+access, so Huntly does not support them: Glassdoor, and Jobberman (its `robots.txt` blocks
+job pages and its API). Use their own email alerts for those boards.
 
 ## Development
 

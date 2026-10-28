@@ -1,11 +1,13 @@
-import { Bookmark, Briefcase, ExternalLink, EyeOff, Play, RotateCcw, Search, ShieldAlert } from "lucide-react";
+import { Bookmark, Briefcase, ExternalLink, EyeOff, Play, RotateCcw, Search, ShieldAlert, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 import { JobRow } from "@/components/JobRow";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/input";
 import { Badge, EmptyState, ErrorState, HeatMeter, Segmented, Skeleton } from "@/components/ui/misc";
 import { api, type Application, type Job } from "@/lib/api";
+import { announceDocuments, type Generated } from "@/pages/Applications";
 import { openUrl } from "@/lib/platform";
 import { qk, useAction, useJob, useJobs, useSources } from "@/lib/queries";
 import { formatDate, relativeTime, titleCase } from "@/lib/utils";
@@ -22,13 +24,29 @@ function useJobActions(id: number) {
     invalidate: [qk.applications, ["jobs"], qk.job(id)],
     onSuccess: (app) => navigate(`/applications?id=${app.id}`),
   });
-  return { setStatus, apply };
+  // One click: start the application and make the tailored CV and cover letter.
+  const tailor = useAction(
+    async () => {
+      const app = await api<Application>("/applications", { method: "POST", json: { job_id: id } });
+      const docs = await api<Generated>(`/applications/${app.id}/documents`, { method: "POST", json: { format: "pdf", use_llm: true } }).catch((e: Error) => e);
+      return { app, docs };
+    },
+    {
+      invalidate: [qk.applications, qk.documents, ["jobs"], qk.job(id)],
+      onSuccess: ({ app, docs }) => {
+        if (docs instanceof Error) toast.error(docs.message);
+        else announceDocuments(docs);
+        navigate(`/applications?id=${app.id}`);
+      },
+    },
+  );
+  return { setStatus, apply, tailor };
 }
 
 function JobDetail({ id }: { id: number }) {
   const job = useJob(id);
   const navigate = useNavigate();
-  const { setStatus, apply } = useJobActions(id);
+  const { setStatus, apply, tailor } = useJobActions(id);
 
   if (job.isPending)
     return (
@@ -65,9 +83,14 @@ function JobDetail({ id }: { id: number }) {
             <Briefcase /> Open application
           </Button>
         ) : (
-          <Button variant="primary" onClick={() => apply.mutate()} loading={apply.isPending}>
-            <Briefcase /> Start application
-          </Button>
+          <>
+            <Button variant="primary" onClick={() => tailor.mutate()} loading={tailor.isPending} disabled={apply.isPending}>
+              <Sparkles /> Tailor for this job
+            </Button>
+            <Button onClick={() => apply.mutate()} loading={apply.isPending} disabled={tailor.isPending}>
+              <Briefcase /> Start application
+            </Button>
+          </>
         )}
         {j.url ? (
           <Button onClick={() => openUrl(j.url!)}>

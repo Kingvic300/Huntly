@@ -5,7 +5,9 @@ already in the profile by relevance to the job. When the optional LLM drafts
 cover-letter prose, :func:`find_fabrications` rejects any paragraph that
 introduces numbers, proper nouns or skills that do not appear in the profile or
 the job posting's company/title; rejected drafts fall back to a template built
-purely from profile facts.
+purely from profile facts. Reworded CV bullets are checked one by one against the
+bullet they replace (:func:`bullet_fabrications`); a rejected bullet keeps the
+user's own wording.
 """
 
 from __future__ import annotations
@@ -21,6 +23,7 @@ from docx.shared import Pt, RGBColor
 from fpdf import FPDF
 
 from huntly.config import TZ, resource_path
+from huntly.services.ats import job_keywords
 from huntly.services.matching import _term_regex
 from huntly.services.profile import Experience, ProfileData, profile_corpus
 
@@ -82,6 +85,47 @@ def find_fabrications(text: str, allowed_corpus: str) -> list[str]:
             if w and w not in _COMMON and w.lower() not in corpus:
                 problems.append(w)
     return sorted(set(problems))
+
+
+def bullet_fabrications(rewrite: str, original: str, role: Experience, profile: ProfileData) -> list[str]:
+    """What a reworded bullet adds beyond the bullet it replaces.
+
+    Stricter than letters: numbers, names and known skills must come from *this* bullet
+    (or the role's own title and company), so facts cannot move between roles. The first
+    word is exempt from the proper-noun check because bullets open with a capitalised verb.
+    """
+    allowed = f"{original}\n{role.title}\n{role.company}"
+    problems = find_fabrications(rewrite[:1].lower() + rewrite[1:], allowed)
+    problems += [k for k in job_keywords(rewrite, profile) if not _term_regex(k.lower()).search(allowed.lower())]
+    return sorted(set(problems))
+
+
+def apply_highlight_rewrites(t: TailoredCV, rewritten: list[list[str]], job_text: str) -> tuple[int, int, list[str]]:
+    """Swap in reworded bullets that pass :func:`bullet_fabrications`; keep the user's own otherwise.
+
+    Returns (bullets reworded, bullets offered, problems found).
+    """
+    used, offered, problems = 0, 0, []
+    experience = []
+    for i, e in enumerate(t.experience):
+        new = rewritten[i] if i < len(rewritten) else []
+        if len(new) != len(e.highlights):
+            experience.append(e)
+            continue
+        highlights = []
+        for original, rewrite in zip(e.highlights, new):
+            offered += 1
+            found = bullet_fabrications(rewrite, original, e, t.profile) if rewrite else []
+            problems += found
+            if rewrite and not found:
+                used += 1
+                highlights.append(rewrite)
+            else:
+                highlights.append(original)
+        highlights.sort(key=lambda h: -_relevance(h, job_text))
+        experience.append(e.model_copy(update={"highlights": highlights}))
+    t.experience = experience
+    return used, offered, sorted(set(problems))
 
 
 _PAST_VERBS = {"built", "led", "ran", "wrote", "made", "grew", "cut", "won", "set", "drove", "took", "began"}

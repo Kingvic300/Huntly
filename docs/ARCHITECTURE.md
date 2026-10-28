@@ -43,8 +43,10 @@ characters removed, injection heuristics) → dedupe by URL hash → `matching.s
 ## Data flow: applying
 
 1. *Start application* creates an `Application` for a job.
-2. *Generate* builds a tailored CV (profile facts re-ordered by relevance) and a cover letter
-   (template from profile facts; optional Groq wording checked by `find_fabrications`).
+2. *Generate* builds a tailored CV (profile facts re-ordered by relevance; optional Groq wording
+   for the summary and for each achievement bullet, checked by `find_fabrications` and
+   `bullet_fabrications`) and a cover letter (template from profile facts; optional Groq wording
+   checked by `find_fabrications`). *Tailor for this job* in Discover runs steps 1 and 2 together.
 3. *Prepare email* creates an `EmailApproval` (`pending`) with a content hash.
 4. User edits (hash recomputed, approval reset), optionally saves a Gmail draft.
 5. *Approve* requires `confirm=true` **and** the hash the UI displayed; stores `approved_hash`.

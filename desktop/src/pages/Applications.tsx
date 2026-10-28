@@ -24,6 +24,13 @@ const LABEL: Record<AppStatus, string> = {
 };
 const BOARD: AppStatus[] = ["preparing", "awaiting_approval", "applied", "interviewing", "offer"];
 
+export type Generated = { warnings: string[]; source: string };
+
+export function announceDocuments(r: Generated) {
+  toast.success(r.source === "groq" ? "CV and cover letter ready, with AI-suggested wording" : "CV and cover letter ready");
+  r.warnings.forEach((w) => toast.warning(w));
+}
+
 export function StatusBadge({ status }: { status: AppStatus }) {
   const tone = status === "awaiting_approval" ? "act" : status === "offer" ? "ok" : status === "interviewing" ? "heat" : status === "rejected" ? "bad" : "neutral";
   return <Badge tone={tone}>{LABEL[status]}</Badge>;
@@ -101,12 +108,9 @@ function ApplicationDetail({ id, onDeleted }: { id: number; onDeleted: () => voi
   }, [app.data?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const patch = useAction((body: Partial<Pick<Application, "status" | "notes" | "contact_email">>) => api(`/applications/${id}`, { method: "PATCH", json: body }), { invalidate: inv, success: "Saved" });
-  const generate = useAction(() => api<{ warnings: string[]; source: string }>(`/applications/${id}/documents`, { method: "POST", json: { format: fmt, use_llm: useLlm } }), {
+  const generate = useAction(() => api<Generated>(`/applications/${id}/documents`, { method: "POST", json: { format: fmt, use_llm: useLlm } }), {
     invalidate: inv,
-    onSuccess: (r) => {
-      toast.success(r.source === "groq" ? "CV and cover letter ready, with AI-suggested wording" : "CV and cover letter ready");
-      r.warnings.forEach((w) => toast.warning(w));
-    },
+    onSuccess: announceDocuments,
   });
   const prepare = useAction(() => api<Approval>(`/applications/${id}/email`, { method: "POST", json: { to: contact || null } }), {
     invalidate: inv,
@@ -198,7 +202,7 @@ function ApplicationDetail({ id, onDeleted }: { id: number; onDeleted: () => voi
       <div className="mt-8 space-y-8">
         <Step n={1} title="Tailor your documents" done={!!cv}>
           <p className="mb-2 max-w-[62ch] text-[12.5px] text-muted">
-            An ATS-friendly CV built only from your profile: one column, standard headings, real text, and the skills and achievements this job asks for moved to the top.
+            An ATS-friendly CV built only from your profile: one column, standard headings, real text, and the skills and achievements this job asks for moved to the top. With Groq on, your summary and achievement bullets are reworded in the job's language; any wording that adds something not in your profile is dropped.
           </p>
           <DocLine d={cv} label="CV" />
           <DocLine d={cl} label="Cover letter" />

@@ -28,6 +28,7 @@ from huntly.services import store
 from huntly.services.ats import ats_report
 from huntly.services.documents import (
     allowed_corpus_for_letter,
+    apply_highlight_rewrites,
     cv_plaintext,
     find_fabrications,
     render_cv_docx,
@@ -91,7 +92,7 @@ def generate_documents(ctx: AppContext, application_id: int, fmt: str = "pdf", u
         t = tailor(profile, job.title, job.description)
         corpus = allowed_corpus_for_letter(profile, job.title, job.company or "")
         warnings: list[str] = []
-        sources: dict[str, str] = {"summary": "profile", "letter": "template"}
+        sources: dict[str, str] = {"summary": "profile", "highlights": "profile", "letter": "template"}
         client = ctx.groq() if use_llm else None
 
         if client is not None and profile.summary:
@@ -104,6 +105,21 @@ def generate_documents(ctx: AppContext, application_id: int, fmt: str = "pdf", u
                     t.summary_override, sources["summary"] = summary, "groq"
             except LLMError as exc:
                 warnings.append(f"AI summary unavailable ({exc}); used your own summary.")
+
+        if client is not None and any(e.highlights for e in t.experience):
+            roles = [{"title": e.title, "company": e.company, "highlights": e.highlights} for e in t.experience]
+            try:
+                rewritten = client.tailored_highlights(roles, job.title, job.company or "", job.description)
+                used, offered, problems = apply_highlight_rewrites(t, rewritten, f"{job.title}\n{job.description}")
+                if used:
+                    sources["highlights"] = "groq"
+                if problems:
+                    warnings.append(
+                        f"AI wording discarded for {offered - used} of {offered} achievement bullets: it mentioned things not in them ("
+                        + ", ".join(problems[:8]) + "). Kept your own wording for those."
+                    )
+            except LLMError as exc:
+                warnings.append(f"AI bullet wording unavailable ({exc}); used your own.")
 
         person = safe_filename(profile.full_name, 40)
         role = f"{safe_filename(job.company or 'Company', 30)}-{safe_filename(job.title, 40)}"
@@ -127,7 +143,7 @@ def generate_documents(ctx: AppContext, application_id: int, fmt: str = "pdf", u
         (render_letter_pdf if fmt == "pdf" else render_letter_docx)(profile, paragraphs, job.company or "", cl_path)
 
         source = "groq" if "groq" in sources.values() else "template"
-        cv = _add_document(s, ctx, "tailored_cv", f"CV for {job.title}", job.id, cv_path, {"relevant_skills": t.relevant_skills, "ats": ats, "summary_source": sources["summary"], "source": source, "pages": pages})
+        cv = _add_document(s, ctx, "tailored_cv", f"CV for {job.title}", job.id, cv_path, {"relevant_skills": t.relevant_skills, "ats": ats, "summary_source": sources["summary"], "highlights_source": sources["highlights"], "source": source, "pages": pages})
         cl = _add_document(s, ctx, "cover_letter", f"Cover letter for {job.title}", job.id, cl_path, {"source": sources["letter"], "paragraphs": paragraphs, "warnings": warnings})
         app.cv_document_id, app.cover_letter_document_id = cv.id, cl.id
         store.audit(s, "user", "documents.generated", "application", app.id, cv=cv.id, cover_letter=cl.id, source=source, ats_score=ats["score"])
