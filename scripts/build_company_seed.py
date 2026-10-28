@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
@@ -28,7 +29,7 @@ sys.path.insert(0, str(ROOT / "core"))
 
 from huntly.security.ssrf import safe_get  # noqa: E402
 from huntly.services.companies import board_config, name_key, probe  # noqa: E402
-from huntly.services.sources.base import SourceContext  # noqa: E402
+from huntly.services.sources.base import SourceContext, SourceError  # noqa: E402
 from huntly.services.sources.registry import SOURCES  # noqa: E402
 
 SEED = ROOT / "core" / "huntly" / "assets" / "companies.json"
@@ -76,12 +77,19 @@ def board_employers(sctx: SourceContext) -> list[str]:
     return names
 
 
-def open_jobs(board: tuple[str, str], sctx: SourceContext) -> int:
+def open_jobs(board: tuple[str, str], sctx: SourceContext) -> int | None:
+    """Open jobs on a board: 0 when it is gone or empty, None when it could not be reached."""
     platform, slug = board
-    try:
-        return len(SOURCES[platform].fetch(board_config(platform, slug), sctx))
-    except Exception:
-        return 0
+    for attempt in range(3):
+        try:
+            return len(SOURCES[platform].fetch(board_config(platform, slug), sctx))
+        except SourceError as exc:
+            if "HTTP 404" in str(exc):
+                return 0
+        except Exception:
+            pass
+        time.sleep(2 * (attempt + 1))
+    return None
 
 
 def save(boards: dict, version: int) -> None:
@@ -92,7 +100,9 @@ def save(boards: dict, version: int) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--target", type=int, default=540, help="stop looking up names at this many boards")
-    target = parser.parse_args().target
+    parser.add_argument("--skip", type=int, default=0, help="skip this many names (to continue an earlier run)")
+    args = parser.parse_args()
+    target = args.target
     sctx = SourceContext(get_secret=lambda _: None)
 
     data = json.loads(SEED.read_text()) if SEED.exists() else {"version": 0, "companies": []}
@@ -111,6 +121,7 @@ def main() -> None:
             if name_key(n) and name_key(n) not in seen:
                 seen.add(name_key(n))
                 queue.append((n, platforms))
+    queue = queue[args.skip:]
     print(f"{len(boards)} boards now; looking up {len(queue)} employers until {target}", file=sys.stderr)
 
     done = 0
@@ -133,7 +144,9 @@ def main() -> None:
     for board in [b for b, n in counts.items() if n == 0]:
         del boards[board]
     save(boards, version)
-    print(f"wrote {len(boards)} boards with {sum(counts.values())} open jobs to {SEED.relative_to(ROOT)}", file=sys.stderr)
+    unreachable = sum(1 for n in counts.values() if n is None)
+    total = sum(n for n in counts.values() if n)
+    print(f"wrote {len(boards)} boards with {total} open jobs to {SEED.relative_to(ROOT)} ({unreachable} kept but unreachable today)", file=sys.stderr)
 
 
 if __name__ == "__main__":

@@ -187,7 +187,7 @@ The directory follows companies' own job boards on Greenhouse, Lever, Ashby, Sma
 Recruitee, Workable, BambooHR and Breezy HR, from startups in Lagos to remote-first companies
 anywhere:
 
-- **Starter list:** about 180 boards with open jobs ship with the app, including Nigerian
+- **Starter list:** about 540 boards with open jobs ship with the app, including Nigerian
   and other African employers (`core/huntly/assets/companies.json`, rebuilt with
   `scripts/build_company_seed.py`).
 - **Grows by itself:** each search looks up a few employers that your other sources found and
