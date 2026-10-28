@@ -21,7 +21,7 @@ MAX_HTTP_BYTES = 5 * 1024 * 1024
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 MAX_JOB_DESCRIPTION_CHARS = 20_000
 HTTP_TIMEOUT_SECONDS = 20.0
-USER_AGENT = "Huntly/0.3.2 (+https://github.com/Kingvic300/Huntly; local desktop job assistant)"
+USER_AGENT = "Huntly/0.3.3 (+https://github.com/Kingvic300/Huntly; local desktop job assistant)"
 
 
 def _default_data_dir() -> Path:
