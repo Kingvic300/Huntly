@@ -9,7 +9,7 @@ before anything is sent**. A daily digest lands in your own inbox.
 
 - **Local-first.** A native desktop window (Tauri) talking to a local Python core over
   `127.0.0.1`. Your data lives in one folder on your computer.
-- **Bring your own keys.** Google OAuth client, X API bearer token and Groq API key are
+- **Bring your own keys.** Google OAuth client and Groq API key are
   entered by you during onboarding and encrypted at rest (AES-256-GCM, Argon2id). The
   maintainers have no server, no copy of your keys and no way to decrypt them.
 - **No telemetry.** No analytics, crash reporting, update pings or remote logging.
@@ -41,7 +41,7 @@ Licensed under [Apache-2.0](LICENSE).
 | **Applications** | A board by stage. Each application walks you through making an ATS-friendly CV and cover letter, writing the email, and approving it, with an ATS readiness report and notes. |
 | **Approvals** | The email exactly as the recipient will see it, a checklist you tick before approving, time-limited approval, Gmail drafts, reply status and follow-ups. |
 | **Profile** | Import your existing CV (PDF/Word, parsed locally), then edit every section: contact details including LinkedIn, GitHub and website, experience, education, projects and preferences. Plus your file library. |
-| **Sources** | RSS/Atom, Greenhouse, Lever, Ashby, Remotive, Remote OK, Himalayas, Jobicy, Arbeitnow, company career pages (schema.org `JobPosting`), X recent search. Health, last run and errors per source. |
+| **Sources** | RSS/Atom, Greenhouse, Lever, Ashby, Remotive, Remote OK, Himalayas, Jobicy, Arbeitnow, company career pages (schema.org `JobPosting`). Health, last run and errors per source. |
 | **Insights** | Found vs applied over time, match distribution, where applications stand, jobs per source, demand for your skills. |
 | **Settings** | Search interval, digest time (Africa/Lagos), reply tracking and follow-up timing, AI options, approval expiry, accounts and keys, vault, privacy, activity log. |
 
@@ -148,7 +148,6 @@ All optional — enable only what you use.
 | Credential | Used for | How to get it |
 | --- | --- | --- |
 | Google OAuth client (Desktop app JSON) | Gmail drafts, approved sends, daily digest, reply tracking | Google Cloud Console → create project → enable **Gmail API** → Google Auth Platform (OAuth consent screen): External, then **Audience → Test users → add your own Gmail address** → Credentials → *OAuth client ID* → **Desktop app** → download JSON. Recommended: on Audience click **Publish app** (no verification needed for personal use); in Testing mode Google expires the connection every 7 days. When connecting, Google warns the app is unverified; it is your own app, so choose Continue. If you see `Error 403: access_denied`, your address is not on the test-user list. Scopes requested: `gmail.compose` (drafts and sending) and `gmail.metadata` (message headers only, for reply tracking). Huntly cannot read email content. |
-| X API bearer token | X recent-search source | developer.x.com → project/app → *Bearer Token*. Requires an access tier that includes `GET /2/tweets/search/recent`. |
 | Groq API key | Optional AI fit notes and cover-letter wording | console.groq.com → API Keys. |
 
 ## Job sources
@@ -165,7 +164,6 @@ All optional — enable only what you use.
 | Jobicy | `jobicy.com/api/v2/remote-jobs` | Public API; jobs link to the original Jobicy listing, as its terms require. |
 | Ashby | `api.ashbyhq.com/posting-api/job-board/{board}` | Public Job Postings API for companies hiring through Ashby. |
 | Career page | any URL | Reads only schema.org `JobPosting` JSON-LD the site publishes. No scraping, no JS. |
-| X recent search | `api.x.com/2/tweets/search/recent` | Your bearer token; retweets excluded. |
 
 All fetches go through an SSRF guard (http/https only, public addresses only, re-checked on
 every redirect, size and time limits). Respect each site's terms of service.

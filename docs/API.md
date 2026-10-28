@@ -19,7 +19,7 @@ Status codes: `401` bad token · `403` non-loopback host · `423` vault locked �
 | POST | `/vault/keyring` | `{enabled}` store/remove data key in OS keychain |
 | POST | `/onboarding/complete` | Mark onboarding finished |
 | GET | `/credentials` | Names and *configured* flags only — values are never returned |
-| PUT/DELETE | `/credentials/{name}` | `google_oauth_client`, `x_bearer_token`, `groq_api_key` |
+| PUT/DELETE | `/credentials/{name}` | `google_oauth_client`, `groq_api_key` |
 | GET | `/gmail/status` · POST `/gmail/connect` · `/gmail/disconnect` · `/gmail/test` | Gmail OAuth |
 | GET/PUT | `/settings` | Schedules, digest, Groq, approval window |
 | GET | `/scheduler` | Scheduled jobs and recent runs |

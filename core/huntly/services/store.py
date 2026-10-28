@@ -19,7 +19,6 @@ CREDENTIALS: dict[str, dict[str, str]] = {
         "help": "Create a 'Desktop app' OAuth client in your own Google Cloud project and paste the downloaded JSON.",
     },
     "google_token": {"label": "Gmail OAuth token", "help": "Created automatically when you connect Gmail."},
-    "x_bearer_token": {"label": "X API v2 bearer token", "help": "From your X developer project (recent search access)."},
     "groq_api_key": {"label": "Groq API key", "help": "Optional. Enables LLM ranking notes and wording suggestions."},
 }
 

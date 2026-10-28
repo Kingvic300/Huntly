@@ -20,10 +20,6 @@ RSS = """<?xml version="1.0"?><rss version="2.0"><channel><title>Jobs Feed</titl
 
 GREENHOUSE = {"jobs": [{"id": 7, "title": "Senior Python Developer", "absolute_url": "https://boards.greenhouse.io/acme/jobs/7", "location": {"name": "Lagos"}, "updated_at": "2026-10-10T00:00:00Z", "content": "&lt;p&gt;Python &amp;amp; Docker&lt;/p&gt;"}]}
 LEVER = [{"id": "abc", "text": "Python Developer", "hostedUrl": "https://jobs.lever.co/acme/abc", "categories": {"location": "Remote"}, "workplaceType": "remote", "createdAt": 1760000000000, "descriptionPlain": "Python AWS", "lists": [{"text": "Requirements", "content": "<li>FastAPI</li>"}]}]
-X = {
-    "data": [{"id": "111", "text": "We're hiring a Backend Engineer! Python + FastAPI https://t.co/x", "author_id": "u1", "created_at": "2026-10-13T09:00:00Z", "entities": {"urls": [{"expanded_url": "https://careers.example.com/be"}]}}],
-    "includes": {"users": [{"id": "u1", "username": "examplecorp", "name": "Example Corp"}]},
-}
 CAREER = """<html><script type="application/ld+json">{"@context":"https://schema.org","@type":"JobPosting","title":"Platform Engineer","description":"<p>Docker, AWS</p>","datePosted":"2026-10-01","hiringOrganization":{"@type":"Organization","name":"Example"},"jobLocationType":"TELECOMMUTE","url":"https://example.com/careers/1"}</script></html>"""
 
 
@@ -98,23 +94,6 @@ def test_board_slug_validation():
         SOURCES["greenhouse"].validate({"board": "../../etc"})
 
 
-def test_x_search_requires_and_uses_token(fake_fetch):
-    with pytest.raises(SourceError):
-        SOURCES["x_search"].fetch({"query": "hiring", "max_results": 10}, _ctx(fake_fetch))
-    fake_fetch.routes["https://api.x.com/2/tweets/search/recent"] = (200, X)
-    cfg = SOURCES["x_search"].validate({"query": "hiring python"})
-    assert "-is:retweet" in cfg["query"]
-    jobs = SOURCES["x_search"].fetch(cfg, _ctx(fake_fetch, secret="xtoken"))
-    assert jobs[0].url == "https://careers.example.com/be"
-    assert fake_fetch.calls[-1][1]["Authorization"] == "Bearer xtoken"
-
-
-def test_x_auth_error(fake_fetch):
-    fake_fetch.routes["https://api.x.com/2/tweets/search/recent"] = (401, {"title": "Unauthorized"})
-    with pytest.raises(SourceError, match="authorisation"):
-        SOURCES["x_search"].fetch({"query": "q", "max_results": 10}, _ctx(fake_fetch, secret="bad"))
-
-
 def test_scoring_ranks_relevant_higher():
     now = datetime(2026, 10, 14, tzinfo=timezone.utc)
     good, gb = score_job(SAMPLE_PROFILE, title="Backend Engineer", description="Python FastAPI PostgreSQL Docker AWS", location="Lagos", remote=False, posted_at=now - timedelta(days=1), now=now)
@@ -147,3 +126,27 @@ def test_collect_dedupes_scores_and_flags(with_profile, fake_fetch):
         broken = s.query(Source).filter_by(name="Broken").one()
         assert broken.last_status == "error" and "404" in broken.last_error
         assert s.query(store.Notification).count() >= 1
+
+
+def test_migration_removes_x_sources_but_keeps_their_jobs(ctx):
+    from alembic import command
+    from alembic.config import Config
+
+    from huntly.config import resource_path
+    from huntly.models import Secret
+
+    cfg = Config()
+    cfg.set_main_option("script_location", str(resource_path("migrations")))
+    cfg.attributes["engine"] = ctx.db.engine
+    command.downgrade(cfg, "0004")
+    with ctx.db.session() as s:
+        x = Source(kind="x_search", name="X", config={"query": "hiring"})
+        keep = Source(kind="remotive", name="Remotive", config={})
+        s.add_all([x, keep, Secret(name="x_bearer_token", nonce=b"n", ciphertext=b"c")])
+        s.flush()
+        s.add(Job(dedupe_key="x1", title="Found on X", source_id=x.id))
+    command.upgrade(cfg, "head")
+    with ctx.db.session() as s:
+        assert [src.kind for src in s.query(Source).all()] == ["remotive"]
+        assert s.get(Secret, "x_bearer_token") is None
+        assert s.query(Job).filter_by(dedupe_key="x1").one().source_id is None

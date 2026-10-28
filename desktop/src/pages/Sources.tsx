@@ -11,7 +11,6 @@ import { cn, relativeTime } from "@/lib/utils";
 
 const BLURB: Record<string, string> = {
   rss: "Any RSS or Atom job feed",
-  x_search: "Posts on X that match a search",
   greenhouse: "A company's Greenhouse job board",
   lever: "A company's Lever job board",
   ashby: "A company's Ashby job board",
@@ -22,7 +21,6 @@ const BLURB: Record<string, string> = {
   arbeitnow: "Jobs from the Arbeitnow board",
   career_page: "A careers page that publishes job data",
 };
-const CRED_NAME: Record<string, string> = { x_bearer_token: "X bearer token" };
 
 function SourceDialog({ open, onOpenChange, editing, catalog }: { open: boolean; onOpenChange: (o: boolean) => void; editing: Source | null; catalog: SourceKind[] }) {
   const [kind, setKind] = useState<string | null>(editing?.kind ?? null);
@@ -72,7 +70,7 @@ function SourceDialog({ open, onOpenChange, editing, catalog }: { open: boolean;
               >
                 <span className="block text-[13.5px] font-medium">{c.label}</span>
                 <span className="mt-0.5 block text-[12.5px] text-muted">{BLURB[c.kind]}</span>
-                {c.needs_secret ? <span className="mt-2 flex items-center gap-1 text-[11.5px] text-faint"><KeyRound className="size-3" /> Needs your {CRED_NAME[c.needs_secret] ?? c.needs_secret}</span> : null}
+                {c.needs_secret ? <span className="mt-2 flex items-center gap-1 text-[11.5px] text-faint"><KeyRound className="size-3" /> Needs your {c.needs_secret}</span> : null}
               </button>
             ))}
           </div>
@@ -167,7 +165,7 @@ export default function Sources() {
                       </span>
                       {missingKey ? (
                         <Link to="/settings" className="mt-1 flex items-center gap-1 text-[12px] text-warn hover:underline">
-                          <KeyRound className="size-3" /> Add your {CRED_NAME[needs] ?? needs} to use this
+                          <KeyRound className="size-3" /> Add your {needs} to use this
                         </Link>
                       ) : s.last_status === "error" && s.last_error ? (
                         <span className="mt-1 block line-clamp-2 text-[12px] text-bad selectable">{s.last_error}</span>

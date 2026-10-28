@@ -7,10 +7,9 @@ import { Button } from "./ui/button";
 import { Input, Textarea } from "./ui/input";
 import { Badge } from "./ui/misc";
 
-const EDITABLE = ["google_oauth_client", "x_bearer_token", "groq_api_key"];
+const EDITABLE = ["google_oauth_client", "groq_api_key"];
 const FRIENDLY: Record<string, { name: string; use: string }> = {
   google_oauth_client: { name: "Google sign-in file", use: "Lets Huntly ask Google for access to your Gmail. Create a “Desktop app” OAuth client in your own Google Cloud project and load the JSON file it gives you." },
-  x_bearer_token: { name: "X API token", use: "Needed only for X search sources. Find it in your X developer project." },
   groq_api_key: { name: "Groq API key", use: "Optional. Lets Groq add fit notes to jobs and suggest cover-letter wording." },
 };
 

@@ -154,12 +154,12 @@ def test_settings_validation(client):
 
 def test_vault_reset_discards_undecryptable_secrets(client, ctx):
     client.post("/api/vault/create", json={"password": PASSWORD})
-    client.put("/api/credentials/x_bearer_token", json={"value": "old-token-value"})
+    client.put("/api/credentials/groq_api_key", json={"value": "old-token-value"})
     ctx.vault.lock()
     ctx.paths.vault.unlink()  # user forgot password and reset
     assert client.post("/api/vault/create", json={"password": "a brand new password"}).status_code == 200
     creds = {c["name"]: c["configured"] for c in client.get("/api/credentials").json()}
-    assert creds["x_bearer_token"] is False
+    assert creds["groq_api_key"] is False
 
 
 def test_pipeline_counts(client, ctx):
