@@ -18,6 +18,22 @@ from huntly.security.ssrf import FetchResult, safe_get
 SLUG = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,99}$")
 EMAIL = re.compile(r"(?i)\b(?:mailto:)?([a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})\b")
 REMOTE_HINT = re.compile(r"(?i)\b(remote|work from home|wfh|anywhere|distributed)\b")
+# Hybrid means not remote. In a title or location any "hybrid" counts except tech terms ("Hybrid
+# Cloud Engineer"); in the text it must describe the way of working ("hybrid role", "work model:
+# hybrid", "3 days a week in the office"). "Remote or hybrid" offers remote, so it stays remote.
+HYBRID_LABEL = re.compile(r"(?i)\bhybrid\b(?![\s-]*(?:cloud|apps?|mobile|application|infrastructure|integration|vehicle|it\b|environments?\b))")
+HYBRID_TEXT = re.compile(
+    r"(?i)\bhybrid[\s-]*(?:remote|role|position|job|work(?:ing|place)?|model|schedule|arrangement|set[- ]?up|policy|opportunity|basis)\b"
+    r"|\b(?:workplace|work\s+(?:type|model|arrangement|style|location|setup)|working\s+model|location|this\s+(?:is\s+a|role\s+is))[\s:(-]*hybrid\b"
+    r"|\b(?:\d|one|two|three|four)(?:\s*(?:-|to)\s*(?:\d|two|three|four))?\s*days?\s*(?:a|per|each|every)?\s*week\s+(?:in|at|from)\s+(?:the\s+|our\s+)?office"
+)
+REMOTE_OR_HYBRID = re.compile(r"(?i)\bremote\s*(?:or|/)\s*hybrid\b|\bhybrid\s*(?:or|/)\s*remote\b")
+
+
+def is_hybrid(title: str, location: str, text: str) -> bool:
+    head = f"{title} {location}"
+    found = HYBRID_LABEL.search(head) or HYBRID_TEXT.search(text[:4000])
+    return bool(found) and not REMOTE_OR_HYBRID.search(f"{head} {text[:4000]}")
 
 
 class SourceError(Exception):
@@ -42,7 +58,9 @@ class RawJob:
         self.company = clean_text(self.company or "", 200) or None
         self.location = clean_text(self.location or "", 200) or None
         self.description = html_to_text(self.description)
-        if self.remote is None:
+        if is_hybrid(self.title, self.location or "", self.description):
+            self.remote = False  # even when the board files it under remote
+        elif self.remote is None:
             self.remote = bool(REMOTE_HINT.search(f"{self.title} {self.location or ''} {self.description[:2000]}"))
         if not self.apply_email:
             m = EMAIL.search(self.description)

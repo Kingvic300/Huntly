@@ -6,7 +6,7 @@ import { DocActions } from "@/components/DocActions";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/dialog";
 import { Field, Input, Select, Textarea } from "@/components/ui/input";
-import { Badge, EmptyState, ErrorState, HeatMeter, PageHeader, Skeleton, Switch } from "@/components/ui/misc";
+import { Badge, EmptyState, ErrorState, MatchRing, PageHeader, Skeleton, Switch } from "@/components/ui/misc";
 import { Sheet } from "@/components/ui/sheet";
 import { api, APP_STATUSES, type AppStatus, type Application, type Approval, type AtsReport, type Doc } from "@/lib/api";
 import { openUrl } from "@/lib/platform";
@@ -151,7 +151,7 @@ function ApplicationDetail({ id, onDeleted }: { id: number; onDeleted: () => voi
         <h2 className="mt-1 text-[22px] font-semibold leading-tight tracking-[-0.015em] selectable">{a.job.title}</h2>
       </div>
       <div className="mt-4 flex flex-wrap items-center gap-3">
-        <HeatMeter score={a.job.score} />
+        <MatchRing score={a.job.score} />
         <Select value={a.status} onChange={(e) => patch.mutate({ status: e.target.value as AppStatus })} className="w-[180px]" aria-label="Application stage">
           {APP_STATUSES.map((s) => (
             <option key={s} value={s}>
@@ -371,7 +371,7 @@ export default function Applications() {
                         </span>
                       ) : null}
                       <span className="mt-2.5 flex items-center justify-between">
-                        <HeatMeter score={a.job.score} size="sm" />
+                        <MatchRing score={a.job.score} size="sm" />
                         <span className="text-[11.5px] text-faint">{relativeTime(a.updated_at)}</span>
                       </span>
                     </button>

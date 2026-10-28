@@ -1,9 +1,9 @@
 import { ShieldAlert } from "lucide-react";
 import type { Job } from "@/lib/api";
 import { cn, relativeTime } from "@/lib/utils";
-import { HeatMeter, Tooltip } from "./ui/misc";
+import { MatchRing, Tooltip } from "./ui/misc";
 
-/** One lead in a list. Heat on the left so lists scan by shape. */
+/** One lead in a list. The match ring sits on the left so lists scan by shape. */
 export function JobRow({ job, active, onClick, compact }: { job: Job; active?: boolean; onClick?: () => void; compact?: boolean }) {
   const where = job.remote && !/remote/i.test(job.location ?? "") ? [job.location, "Remote"].filter(Boolean).join(", ") : job.location ?? "";
   return (
@@ -18,8 +18,8 @@ export function JobRow({ job, active, onClick, compact }: { job: Job; active?: b
       )}
     >
       {active ? <span className="absolute inset-y-2 left-0 w-[3px] rounded-r bg-act" /> : null}
-      <span className="w-[58px] shrink-0">
-        <HeatMeter score={job.score} size="sm" />
+      <span className="flex w-[36px] shrink-0 justify-center">
+        <MatchRing score={job.score} size="sm" />
       </span>
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-2">

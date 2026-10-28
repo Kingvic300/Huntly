@@ -150,3 +150,52 @@ def test_migration_removes_x_sources_but_keeps_their_jobs(ctx):
         assert [src.kind for src in s.query(Source).all()] == ["remotive"]
         assert s.get(Secret, "x_bearer_token") is None
         assert s.query(Job).filter_by(dedupe_key="x1").one().source_id is None
+
+
+def test_hybrid_jobs_are_not_remote():
+    from huntly.services.sources.base import RawJob
+
+    def remote(**kw):
+        return RawJob(**{"title": "Backend Engineer", "url": None, **kw}).normalized().remote
+
+    assert remote(remote=True, description="Python. This is a hybrid role: 3 days a week in the office.") is False
+    assert remote(remote=True, title="Backend Engineer (Hybrid)") is False
+    assert remote(location="Hybrid - Lagos", description="Remote-friendly team") is False
+    assert remote(description="Work model: Hybrid") is False
+    assert remote(description="You'll spend two days a week in the office in Berlin.") is False
+    # Tech terms and "remote or hybrid" don't make a job hybrid.
+    assert remote(remote=True, description="Experience with hybrid cloud and hybrid apps.") is True
+    assert remote(title="Hybrid Cloud Engineer", description="Fully remote") is True
+    assert remote(description="Open to remote or hybrid candidates") is True
+
+
+def test_platform_workplace_types(fake_fetch):
+    fake_fetch.routes["https://api.lever.co/v0/postings/acme"] = (200, [
+        {"id": "1", "text": "A", "hostedUrl": "https://jobs.lever.co/acme/1", "workplaceType": "hybrid", "descriptionPlain": "Remote friendly"},
+        {"id": "2", "text": "B", "hostedUrl": "https://jobs.lever.co/acme/2", "workplaceType": "remote"},
+        {"id": "3", "text": "C", "hostedUrl": "https://jobs.lever.co/acme/3", "workplaceType": "onsite", "descriptionPlain": "remote tooling"},
+    ])
+    fake_fetch.routes["https://api.ashbyhq.com/posting-api/job-board/acme"] = (200, {"jobs": [
+        {"id": "h", "title": "H", "jobUrl": "https://jobs.ashbyhq.com/acme/h", "workplaceType": "Hybrid", "isRemote": True},
+    ]})
+    lever = [j.normalized().remote for j in SOURCES["lever"].fetch({"company": "acme"}, _ctx(fake_fetch))]
+    assert lever == [False, True, False]
+    assert SOURCES["ashby"].fetch({"board": "acme"}, _ctx(fake_fetch))[0].normalized().remote is False
+
+
+def test_migration_marks_saved_hybrid_jobs_not_remote(ctx):
+    from alembic import command
+    from alembic.config import Config
+
+    from huntly.config import resource_path
+
+    cfg = Config()
+    cfg.set_main_option("script_location", str(resource_path("migrations")))
+    cfg.attributes["engine"] = ctx.db.engine
+    command.downgrade(cfg, "0006")
+    with ctx.db.session() as s:
+        s.add(Job(dedupe_key="h1", title="Engineer (Hybrid)", remote=True))
+        s.add(Job(dedupe_key="r1", title="Engineer", remote=True, description="Fully remote"))
+    command.upgrade(cfg, "head")
+    with ctx.db.session() as s:
+        assert {j.dedupe_key: j.remote for j in s.query(Job).all()} == {"h1": False, "r1": True}

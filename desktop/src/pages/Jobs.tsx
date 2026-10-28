@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { JobRow } from "@/components/JobRow";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/input";
-import { Badge, EmptyState, ErrorState, HeatMeter, Segmented, Skeleton } from "@/components/ui/misc";
+import { Badge, EmptyState, ErrorState, MatchRing, Segmented, Skeleton } from "@/components/ui/misc";
 import { api, type Application, type Job } from "@/lib/api";
 import { announceDocuments, type Generated } from "@/pages/Applications";
 import { openUrl } from "@/lib/platform";
@@ -74,7 +74,10 @@ function JobDetail({ id }: { id: number }) {
             Posted {formatDate(j.posted_at)}, found {relativeTime(j.discovered_at)} via {j.source_name ?? "a removed source"}
           </p>
         </div>
-        <HeatMeter score={j.score} size="lg" className="shrink-0 pt-1" />
+        <div className="flex shrink-0 flex-col items-center gap-1.5 pt-1">
+          <MatchRing score={j.score} size="lg" />
+          <span className="text-[11.5px] text-muted">CV match</span>
+        </div>
       </div>
 
       <div className="mt-5 flex flex-wrap items-center gap-2">
@@ -268,10 +271,10 @@ export default function Jobs() {
             </option>
           ))}
         </Select>
-        <Select value={remote} onChange={(e) => setRemote(e.target.value as typeof remote)} className="w-[112px] shrink-0" aria-label="Work location">
+        <Select value={remote} onChange={(e) => setRemote(e.target.value as typeof remote)} className="w-[138px] shrink-0" aria-label="Work location">
           <option value="">Anywhere</option>
           <option value="true">Remote</option>
-          <option value="false">On-site</option>
+          <option value="false">On-site or hybrid</option>
         </Select>
         <Select value={sourceId} onChange={(e) => setSourceId(e.target.value)} className="w-[136px] shrink-0" aria-label="Source">
           <option value="">All sources</option>

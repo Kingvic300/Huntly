@@ -137,26 +137,39 @@ export function Tooltip({ content, children, side = "top" }: { content: React.Re
 export const TooltipProvider = TooltipPrimitive.Provider;
 
 /**
- * Lead heat: the signature element. Five rising bars fill in amber as the match
- * score climbs, so a list can be scanned by shape before reading any number.
+ * Match ring: how well a job fits your profile (built from your CV), 0 to 100. The ring
+ * fills clockwise and turns a deeper amber as the match rises, so a list scans by shape.
  */
-export function HeatMeter({ score, size = "md", showValue = true, className }: { score: number; size?: "sm" | "md" | "lg"; showValue?: boolean; className?: string }) {
+export function MatchRing({ score, size = "md", className }: { score: number; size?: "sm" | "md" | "lg"; className?: string }) {
   const s = Math.max(0, Math.min(100, score));
-  const filled = Math.max(1, Math.ceil(s / 20));
-  const tone = s >= 75 ? "bg-heat" : s >= 50 ? "bg-heat/70" : s >= 30 ? "bg-heat-dim" : "bg-faint";
-  const dims = { sm: { h: 12, w: 3, gap: 2 }, md: { h: 16, w: 4, gap: 2 }, lg: { h: 26, w: 6, gap: 3 } }[size];
+  const { px, stroke, text } = {
+    sm: { px: 30, stroke: 3, text: "text-[10.5px]" },
+    md: { px: 40, stroke: 3.5, text: "text-[12.5px]" },
+    lg: { px: 72, stroke: 6, text: "text-[22px] tracking-tight" },
+  }[size];
+  const r = (px - stroke) / 2;
+  const circumference = 2 * Math.PI * r;
+  const arc = s >= 75 ? "text-heat" : s >= 50 ? "text-heat/75" : s >= 30 ? "text-heat-dim" : "text-faint";
   return (
-    <span className={cn("inline-flex items-end gap-2", className)} aria-label={`Match ${Math.round(s)} out of 100`} role="img">
-      <span className="flex items-end" style={{ gap: dims.gap, height: dims.h }}>
-        {[0, 1, 2, 3, 4].map((i) => (
-          <span key={i} className={cn("rounded-[1.5px]", i < filled ? tone : "bg-line")} style={{ width: dims.w, height: `${40 + i * 15}%` }} />
-        ))}
-      </span>
-      {showValue ? (
-        <span className={cn("font-semibold leading-none tabular-nums", size === "lg" ? "text-[26px] tracking-tight" : size === "md" ? "text-[14px]" : "text-[12px]", s >= 75 ? "text-heat" : s >= 50 ? "text-fg" : "text-muted")}>
-          {Math.round(s)}
-        </span>
-      ) : null}
+    <span role="img" aria-label={`Match ${Math.round(s)} out of 100`} className={cn("relative inline-flex shrink-0 items-center justify-center", className)} style={{ width: px, height: px }}>
+      <svg width={px} height={px} viewBox={`0 0 ${px} ${px}`} className="-rotate-90" aria-hidden="true">
+        <circle cx={px / 2} cy={px / 2} r={r} fill="none" strokeWidth={stroke} stroke="var(--color-line)" />
+        {s >= 1 ? (
+          <circle
+            cx={px / 2}
+            cy={px / 2}
+            r={r}
+            fill="none"
+            strokeWidth={stroke}
+            strokeLinecap="round"
+            stroke="currentColor"
+            strokeDasharray={circumference}
+            strokeDashoffset={circumference * (1 - s / 100)}
+            className={cn(arc, "transition-[stroke-dashoffset] duration-500")}
+          />
+        ) : null}
+      </svg>
+      <span className={cn("absolute font-semibold leading-none tabular-nums", text, s >= 75 ? "text-heat" : s >= 50 ? "text-fg" : "text-muted")}>{Math.round(s)}</span>
     </span>
   );
 }

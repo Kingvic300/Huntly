@@ -47,13 +47,16 @@ describe("TagInput", () => {
   });
 });
 
-describe("HeatMeter", () => {
-  it("fills bars in proportion to the score and labels it", async () => {
-    const { HeatMeter } = await import("@/components/ui/misc");
-    const { container } = render(<HeatMeter score={82} />);
-    expect(screen.getByRole("img", { name: "Match 82 out of 100" })).toBeInTheDocument();
-    expect(container.querySelectorAll(".bg-heat").length).toBe(5);
-    const low = render(<HeatMeter score={15} />);
-    expect(low.container.querySelectorAll(".bg-line").length).toBe(4);
+describe("MatchRing", () => {
+  it("fills the ring in proportion to the score and labels it", async () => {
+    const { MatchRing } = await import("@/components/ui/misc");
+    const { container } = render(<MatchRing score={75} />);
+    expect(screen.getByRole("img", { name: "Match 75 out of 100" })).toHaveTextContent("75");
+    const arc = container.querySelectorAll("circle")[1];
+    const full = Number(arc.getAttribute("stroke-dasharray"));
+    expect(Number(arc.getAttribute("stroke-dashoffset"))).toBeCloseTo(full * 0.25);
+    expect(arc).toHaveClass("text-heat");
+    const empty = render(<MatchRing score={0} />);
+    expect(empty.container.querySelectorAll("circle").length).toBe(1); // track only, no arc
   });
 });

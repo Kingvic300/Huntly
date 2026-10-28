@@ -19,6 +19,10 @@ import re
 from huntly.services.sources.base import SLUG, RawJob, SourceContext, parse_dt, require_ok
 
 
+# Workplace types the hiring platforms report, by name: remote, hybrid or on-site.
+_WORKPLACE = {"remote": True, "hybrid": False, "onsite": False, "on-site": False, "on_site": False}
+
+
 def _slug(config: dict, key: str) -> str:
     value = str(config.get(key, "")).strip()
     if not SLUG.match(value):
@@ -80,7 +84,7 @@ class LeverSource:
                     description=f"{j.get('descriptionPlain') or j.get('description', '')}\n{lists}\n{j.get('additionalPlain', '')}",
                     company=company,
                     location=cats.get("location"),
-                    remote=(j.get("workplaceType") == "remote") or None,
+                    remote=_WORKPLACE.get(str(j.get("workplaceType") or "").lower()),
                     posted_at=parse_dt(j.get("createdAt")),
                     external_id=f"lever:{company}:{j.get('id')}",
                 )
@@ -286,7 +290,7 @@ class AshbySource:
                     description=j.get("descriptionPlain") or j.get("descriptionHtml", ""),
                     company=board,
                     location=j.get("location"),
-                    remote=bool(j.get("isRemote")) or None,
+                    remote=_WORKPLACE.get(str(j.get("workplaceType") or "").lower(), bool(j.get("isRemote")) or None),
                     posted_at=parse_dt(j.get("publishedAt")),
                     external_id=f"ashby:{board}:{j.get('id')}",
                 )
@@ -323,7 +327,7 @@ class SmartRecruitersSource:
                     url=f"https://jobs.smartrecruiters.com/{company}/{job_id}",
                     company=(j.get("company") or {}).get("name") or company,
                     location=", ".join(x for x in [loc.get("city"), country or str(loc.get("country") or "").upper()] if x) or None,
-                    remote=bool(loc.get("remote")) or None,
+                    remote=False if loc.get("hybrid") else (bool(loc.get("remote")) or None),
                     posted_at=parse_dt(j.get("releasedDate")),
                     external_id=f"smartrecruiters:{company}:{job_id}",
                     extra={"company": company, "id": job_id},
@@ -365,7 +369,7 @@ class RecruiteeSource:
                     description=f"{j.get('description') or ''}\n{j.get('requirements') or ''}",
                     company=j.get("company_name") or company,
                     location=j.get("location"),
-                    remote=bool(j.get("remote")) or None,
+                    remote=False if j.get("hybrid") else (bool(j.get("remote")) or None),
                     posted_at=parse_dt(str(j.get("published_at") or "").replace(" UTC", "+00:00")),
                     external_id=f"recruitee:{company}:{j.get('id')}",
                 )

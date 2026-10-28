@@ -9,7 +9,7 @@ import { Button } from "../ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown";
 import { Logo } from "../Logo";
 import { UpdateBanner } from "../Updater";
-import { Dot, HeatMeter } from "../ui/misc";
+import { Dot, MatchRing } from "../ui/misc";
 
 export const NAV = [
   { to: "/", label: "Today", icon: Sun, key: "1" },
@@ -116,7 +116,7 @@ function CommandSearch() {
   const rows = useMemo(() => {
     if (!results) return [];
     return [
-      ...results.jobs.map((j) => ({ key: `j${j.id}`, href: `/jobs?id=${j.id}`, title: j.title, sub: j.company ?? "", lead: <HeatMeter score={j.score} size="sm" /> })),
+      ...results.jobs.map((j) => ({ key: `j${j.id}`, href: `/jobs?id=${j.id}`, title: j.title, sub: j.company ?? "", lead: <MatchRing score={j.score} size="sm" /> })),
       ...results.applications.map((a) => ({ key: `a${a.id}`, href: `/applications?id=${a.id}`, title: a.title, sub: `Application, ${titleCase(a.status).toLowerCase()}`, lead: <Briefcase className="size-3.5 text-muted" /> })),
       ...results.approvals.map((a) => ({ key: `m${a.id}`, href: `/approvals?id=${a.id}`, title: a.subject, sub: `Email, ${a.status}`, lead: <MailCheck className="size-3.5 text-muted" /> })),
     ];
