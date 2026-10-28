@@ -42,7 +42,7 @@ characters removed, injection heuristics) → dedupe by URL hash → `matching.s
 
 The company directory (`services/companies.py`) is a source of its own: each run it looks up a
 few employer names from other sources on the hiring platforms (Greenhouse, Lever, Ashby,
-SmartRecruiters, Recruitee), then checks the boards checked longest ago, a batch at a time
+SmartRecruiters, Recruitee, Workable, BambooHR, Breezy HR), then checks the boards checked longest ago, a batch at a time
 (`directory_batch_size`), and stores only jobs that pass `matching.matches_profile`.
 
 ## Data flow: applying

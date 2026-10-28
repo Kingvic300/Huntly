@@ -1,0 +1,187 @@
+# African employers, Nigerian startups first among them, for core/huntly/assets/companies.json.
+# These are looked up on every supported platform, including Workable, BambooHR and Breezy HR,
+# which many Nigerian startups use. One name per line.
+54gene
+Access Bank
+Aella Credit
+Africa's Talking
+Afriex
+Airtel Africa
+AltSchool Africa
+Anchor
+Andela
+Apollo Agriculture
+Autochek
+Babban Gona
+Bamboo
+Bankly
+Bitnob
+Bloc
+Branch
+Brass
+Bumpa
+Busha
+BuyPower
+Carbon
+Cellulant
+Chaka
+Chipper Cash
+Chowdeck
+Cleva
+Copia
+Cowrywise
+CredPal
+CrowdForce
+Dangote
+Dojah
+Duplo
+Ecobank
+Eden Life
+Edukoya
+Edves
+eTranzact
+Eversend
+Eyowo
+FairMoney
+Farmcrowdy
+Fawry
+Field Intelligence
+Fincra
+Flutterwave
+FoodCourt
+Gebeya
+Geegpay
+Gokada
+Gozem
+Gradely
+Grey
+Gro Intelligence
+Healthlane
+Helicarrier
+Helium Health
+Hello Tractor
+Heyfood
+Ilara Health
+Indicina
+InstaDeep
+Interswitch
+Jiji
+Juicyway
+Jumia
+Jumo
+Kasha
+Kippa
+Klasha
+Kobo360
+Konga
+Kopo Kopo
+Kredi
+Kuda
+Kudabank
+Leatherback
+LemFi
+Lendable
+Lendsqr
+Lidya
+Lipa Later
+Lori Systems
+M-KOPA
+Maplerad
+MarketForce
+MDaaS Global
+MFS Africa
+MNT-Halan
+Moniepoint
+Mono
+Moove
+Moove Africa
+mPharma
+MTN
+Mukuru
+Nala
+Naspers
+Nomba
+Okra
+OLX
+Onafriq
+OPay
+Orda
+Ozow
+Paga
+PalmPay
+Patricia
+Payday
+Payhippo
+Paymob
+Paystack
+Peach Payments
+PiggyVest
+Plumter
+Pngme
+Prembly
+Printivo
+Prospa
+Prosus
+Pula
+Quidax
+Raenest
+Releaf
+Reliance Health
+Remedial Health
+Remitly
+Renmoney
+Risevest
+Roqqu
+Sabi
+Safaricom
+SeamlessHR
+Semicolon
+Sendbox
+Sendwave
+Sendy
+Shortlist
+Shuttlers
+Smile ID
+Standard Bank
+Stears
+Stitch
+Sudo Africa
+Sun King
+Suplias
+Swvl
+Takealot
+Tala
+TeamApt
+TechCabal
+Termii
+Thepeer
+ThriveAgric
+Tizeti
+Topship
+TradeDepot
+Treepz
+Trove
+Tuteria
+Twiga
+TymeBank
+uLesson
+Umba
+Union54
+Utiva
+VALR
+Vendease
+Vendy
+Vezeeta
+VFD Group
+Wasoko
+Wave
+Wema Bank
+Yassir
+Yellow Card
+Yoco
+Youverify
+Zazuu
+Zepz
+Zilla
+Zipline
+Zoona

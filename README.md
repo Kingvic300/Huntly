@@ -41,7 +41,7 @@ Licensed under [Apache-2.0](LICENSE).
 | **Applications** | A board by stage. Each application walks you through making an ATS-friendly CV and cover letter, writing the email, and approving it, with an ATS readiness report and notes. |
 | **Approvals** | The email exactly as the recipient will see it, a checklist you tick before approving, time-limited approval, Gmail drafts, reply status and follow-ups. |
 | **Profile** | Import your existing CV (PDF/Word, parsed locally), then edit every section: contact details including LinkedIn, GitHub and website, experience, education, projects and preferences. Plus your file library. |
-| **Sources** | Remote job boards (Remotive, Remote OK, Himalayas, Jobicy, Arbeitnow) and a company directory, added for you on your first search. Plus RSS/Atom, single company boards (Greenhouse, Lever, Ashby, SmartRecruiters, Recruitee) and career pages (schema.org `JobPosting`). Health, last run and errors per source. |
+| **Sources** | Remote job boards (Remotive, Remote OK, Himalayas, Jobicy, Arbeitnow) and a company directory, added for you on your first search. Plus RSS/Atom, single company boards (Greenhouse, Lever, Ashby, SmartRecruiters, Recruitee, Workable, BambooHR, Breezy HR) and career pages (schema.org `JobPosting`). Health, last run and errors per source. |
 | **Insights** | Found vs applied over time, match distribution, where applications stand, jobs per source, demand for your skills. |
 | **Settings** | Search interval, digest time (Africa/Lagos), reply tracking and follow-up timing, AI options, approval expiry, accounts and keys, vault, privacy, activity log. |
 
@@ -166,6 +166,9 @@ All optional — enable only what you use.
 | Ashby | `api.ashbyhq.com/posting-api/job-board/{board}` | Public Job Postings API for companies hiring through Ashby. |
 | SmartRecruiters | `api.smartrecruiters.com/v1/companies/{company}/postings` | Public Posting API. A job's full text is fetched only when its title fits your profile. |
 | Recruitee | `{company}.recruitee.com/api/offers/` | Public careers-site API. |
+| Workable | `www.workable.com/api/accounts/{company}` | Public careers-page API. Used by many Nigerian startups (Kuda, FairMoney, Renmoney). |
+| BambooHR | `{company}.bamboohr.com/careers/list` | Public careers-page API (Chowdeck, Paga, Risevest). A job's full text is fetched only when its title fits your profile. |
+| Breezy HR | `{company}.breezy.hr/json` | Public careers-page API (Busha). Full text comes from the posting page's schema.org `JobPosting` data, only for jobs whose title fits. |
 | Career page | any URL | Reads only schema.org `JobPosting` JSON-LD the site publishes. No scraping, no JS. |
 
 ### Default sources
@@ -180,10 +183,11 @@ search interval (60 minutes by default), a search starts about 20 seconds later.
 
 ### Company directory
 
-The directory follows companies' own job boards on Greenhouse, Lever, Ashby, SmartRecruiters
-and Recruitee, from startups in Lagos to remote-first companies anywhere:
+The directory follows companies' own job boards on Greenhouse, Lever, Ashby, SmartRecruiters,
+Recruitee, Workable, BambooHR and Breezy HR, from startups in Lagos to remote-first companies
+anywhere:
 
-- **Starter list:** about 170 boards with open jobs ship with the app, including Nigerian
+- **Starter list:** about 180 boards with open jobs ship with the app, including Nigerian
   and other African employers (`core/huntly/assets/companies.json`, rebuilt with
   `scripts/build_company_seed.py`).
 - **Grows by itself:** each search looks up a few employers that your other sources found and

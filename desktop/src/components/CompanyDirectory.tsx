@@ -7,7 +7,16 @@ import { api, type CompanyImport } from "@/lib/api";
 import { qk, useAction, useCompanies, useSettings } from "@/lib/queries";
 import { cn, relativeTime } from "@/lib/utils";
 
-const PLATFORM: Record<string, string> = { greenhouse: "Greenhouse", lever: "Lever", ashby: "Ashby", smartrecruiters: "SmartRecruiters", recruitee: "Recruitee" };
+const PLATFORM: Record<string, string> = {
+  greenhouse: "Greenhouse",
+  lever: "Lever",
+  ashby: "Ashby",
+  smartrecruiters: "SmartRecruiters",
+  recruitee: "Recruitee",
+  workable: "Workable",
+  bamboohr: "BambooHR",
+  breezy: "Breezy HR",
+};
 const BATCH_SIZES = [100, 300, 600, 1000, 2000];
 
 /** Companies' own job boards, checked a batch per search. Lives under the Sources list. */
@@ -40,7 +49,7 @@ export function CompanyDirectory() {
     <Panel>
       <PanelHeader
         title="Company directory"
-        description="Companies' own job boards on Greenhouse, Lever, Ashby, SmartRecruiters and Recruitee. Huntly keeps only jobs that match your target roles or skills."
+        description="Companies' own job boards on Greenhouse, Lever, Ashby, SmartRecruiters, Recruitee, Workable, BambooHR and Breezy HR. Huntly keeps only jobs that match your target roles or skills."
         actions={
           <label className="flex items-center gap-2 text-[12.5px] text-muted">
             Check
@@ -74,7 +83,7 @@ export function CompanyDirectory() {
             <p className="mt-1 text-[12.5px] text-faint">New companies are added when your other sources find jobs at them and Huntly finds their board.</p>
 
             <div className="mt-4 grid gap-2">
-              <Field label="Add companies" hint="Paste board links or platform:name entries, one per line. For example https://boards.greenhouse.io/moniepoint, https://jobs.lever.co/kuda or ashby:lemfi.">
+              <Field label="Add companies" hint="Paste board links or platform:name entries, one per line. For example https://boards.greenhouse.io/moniepoint, https://apply.workable.com/kuda, chowdeck.bamboohr.com or ashby:lemfi.">
                 <Textarea value={text} onChange={(e) => setText(e.target.value)} placeholder={"https://jobs.ashbyhq.com/posthog\nsmartrecruiters:vendease"} className="min-h-20 font-mono text-[12.5px]" />
               </Field>
               <div>

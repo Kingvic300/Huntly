@@ -1,7 +1,7 @@
 """Company directory: many companies' own job boards, checked a batch at a time.
 
 Companies publish jobs through public hiring-platform APIs (Greenhouse, Lever, Ashby,
-SmartRecruiters, Recruitee). Huntly keeps a directory of those boards: a bundled seed
+SmartRecruiters, Recruitee, Workable, BambooHR, Breezy HR). Huntly keeps a directory of those boards: a bundled seed
 list, companies found by looking up the employer names other sources return, and lists
 the user pastes. Each collection run checks the boards checked longest ago, so a large
 directory is covered in rotation rather than all at once. Only jobs that match the
@@ -32,13 +32,21 @@ log = logging.getLogger(__name__)
 
 DIRECTORY_KIND = "company_directory"
 # Hiring platform -> the config key its source adapter expects, in lookup order.
-PLATFORMS = {"greenhouse": "board", "lever": "company", "ashby": "board", "smartrecruiters": "company", "recruitee": "company"}
+PLATFORMS = {
+    "greenhouse": "board", "lever": "company", "ashby": "board", "smartrecruiters": "company", "recruitee": "company",
+    "workable": "company", "bamboohr": "company", "breezy": "company",
+}
+_SUBDOMAIN_PLATFORMS = {"recruitee", "workable", "bamboohr", "breezy"}
 URL_PATTERNS = [
     ("greenhouse", re.compile(r"^(?:https?://)?(?:boards|job-boards)\.greenhouse\.io/(?:embed/job_board\?for=)?([A-Za-z0-9_.-]+)", re.I)),
     ("lever", re.compile(r"^(?:https?://)?jobs\.lever\.co/([A-Za-z0-9_.-]+)", re.I)),
     ("ashby", re.compile(r"^(?:https?://)?jobs\.ashbyhq\.com/([A-Za-z0-9_.-]+)", re.I)),
     ("smartrecruiters", re.compile(r"^(?:https?://)?(?:jobs|careers)\.smartrecruiters\.com/([A-Za-z0-9_.-]+)", re.I)),
     ("recruitee", re.compile(r"^(?:https?://)?([a-z0-9-]+)\.recruitee\.com(?:/|$)", re.I)),
+    ("workable", re.compile(r"^(?:https?://)?apply\.workable\.com/([a-z0-9-]+)(?:/|$)", re.I)),
+    ("workable", re.compile(r"^(?:https?://)?([a-z0-9-]+)\.workable\.com(?:/|$)", re.I)),
+    ("bamboohr", re.compile(r"^(?:https?://)?([a-z0-9-]+)\.bamboohr\.com(?:/|$)", re.I)),
+    ("breezy", re.compile(r"^(?:https?://)?([a-z0-9-]+)\.breezy\.hr(?:/|$)", re.I)),
 ]
 _DNS_LABEL = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$")
 _SUFFIXES = {
@@ -46,7 +54,7 @@ _SUFFIXES = {
     "technologies", "technology", "labs", "global", "africa", "nigeria", "io", "ai", "app",
 }
 FETCH_WORKERS = 8
-DISCOVER_PER_RUN = 12
+DISCOVER_PER_RUN = 10
 DESCRIBE_PER_RUN = 100
 
 
@@ -55,13 +63,13 @@ def board_config(platform: str, slug: str) -> dict:
 
 
 def valid_slug(platform: str, slug: str) -> bool:
-    return bool(_DNS_LABEL.match(slug) if platform == "recruitee" else SLUG.match(slug))
+    return bool(_DNS_LABEL.match(slug) if platform in _SUBDOMAIN_PLATFORMS else SLUG.match(slug))
 
 
 def board_from_url(url: str) -> tuple[str, str] | None:
     for platform, pattern in URL_PATTERNS:
         m = pattern.match(url.strip())
-        if m and m.group(1).lower() not in ("embed", "api", "www") and valid_slug(platform, m.group(1).lower()):
+        if m and m.group(1).lower() not in ("embed", "api", "www", "apply", "j", "app") and valid_slug(platform, m.group(1).lower()):
             return platform, m.group(1).lower()
     return None
 
@@ -125,10 +133,10 @@ def slug_guesses(name: str) -> list[str]:
     return [g for g in dict.fromkeys(guesses) if 2 <= len(g) <= 60]
 
 
-def probe(name: str, sctx: SourceContext) -> tuple[str, str, str] | None:
+def probe(name: str, sctx: SourceContext, platforms=PLATFORMS) -> tuple[str, str, str] | None:
     """Look a company name up on each platform; return the first board with open jobs."""
     for slug in slug_guesses(name):
-        for platform in PLATFORMS:
+        for platform in platforms:
             if not valid_slug(platform, slug):
                 continue
             try:
@@ -223,6 +231,9 @@ def run_directory(s: Session, source: Source, sctx: SourceContext, store_job: St
         c.last_status, c.last_error, c.open_jobs = "ok", None, len(jobs)
         c.name = c.name or (jobs[0].company if jobs else None)
         fetched += len(jobs)
+        for job in jobs:  # some platforms only return the board name; show the company's own
+            if c.name and (job.company or "").lower() == c.slug:
+                job.company = c.name
         describe = describer(c.platform)
         added = sum(store_job(s, source, job.normalized(), profile, relevant_only=True, describe=describe) for job in jobs)
         c.jobs_found += added

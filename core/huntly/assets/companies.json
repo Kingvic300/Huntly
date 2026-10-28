@@ -1,5 +1,5 @@
 {
-"version": 1,
+"version": 2,
 "companies": [
 [
 "ashby",
@@ -297,6 +297,51 @@
 "Zapier"
 ],
 [
+"bamboohr",
+"bloc",
+"Bloc"
+],
+[
+"bamboohr",
+"cellulant",
+"Cellulant"
+],
+[
+"bamboohr",
+"chowdeck",
+"Chowdeck"
+],
+[
+"bamboohr",
+"duplo",
+"Duplo"
+],
+[
+"bamboohr",
+"paga",
+"Paga"
+],
+[
+"bamboohr",
+"risevest",
+"Risevest"
+],
+[
+"breezy",
+"busha",
+"Busha"
+],
+[
+"breezy",
+"buypower",
+"BuyPower"
+],
+[
+"breezy",
+"gokada",
+"Gokada"
+],
+[
 "greenhouse",
 "airbnb",
 "Airbnb"
@@ -454,7 +499,7 @@
 [
 "greenhouse",
 "fivetran",
-"Fivetran "
+"Fivetran"
 ],
 [
 "greenhouse",
@@ -489,7 +534,7 @@
 [
 "greenhouse",
 "grey",
-"GREY "
+"GREY"
 ],
 [
 "greenhouse",
@@ -629,12 +674,12 @@
 [
 "greenhouse",
 "remote",
-"General Assembly Remote Jobs "
+"General Assembly Remote Jobs"
 ],
 [
 "greenhouse",
 "ripple",
-"Ripple "
+"Ripple"
 ],
 [
 "greenhouse",
@@ -699,7 +744,12 @@
 [
 "greenhouse",
 "wise",
-"Wise Worksite Field Sales "
+"Wise Worksite Field Sales"
+],
+[
+"lever",
+"apolloagriculture",
+"Apollo Agriculture"
 ],
 [
 "lever",
@@ -845,6 +895,31 @@
 "smartrecruiters",
 "vendease",
 "Vendease"
+],
+[
+"workable",
+"access-bank",
+"Access Bank PLC"
+],
+[
+"workable",
+"fairmoney",
+"FairMoney"
+],
+[
+"workable",
+"helium-health",
+"Helium Health"
+],
+[
+"workable",
+"kuda",
+"Kuda"
+],
+[
+"workable",
+"renmoney",
+"Renmoney"
 ]
 ]
 }

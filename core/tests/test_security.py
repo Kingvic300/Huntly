@@ -118,7 +118,7 @@ def test_core_has_no_telemetry_endpoints():
     allowed_hosts = {
         "boards-api.greenhouse.io", "api.lever.co", "remotive.com", "www.arbeitnow.com",
         "remoteok.com", "himalayas.app", "jobicy.com", "api.ashbyhq.com", "developers.ashbyhq.com",
-        "api.smartrecruiters.com", "jobs.smartrecruiters.com",
+        "api.smartrecruiters.com", "jobs.smartrecruiters.com", "www.workable.com",
         "api.groq.com", "www.googleapis.com", "remotive.com", "github.com", "developers.greenhouse.io", "www.arbeitnow.com",
         "localhost", "127.0.0.1", "tauri.localhost",  # loopback only (CORS allow-list)
         "linkedin.com",  # example text in a validation message, not a request

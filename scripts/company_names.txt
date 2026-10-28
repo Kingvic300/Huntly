@@ -2,377 +2,230 @@
 # One name per line. Names without a public Greenhouse, Lever, Ashby, SmartRecruiters
 # or Recruitee board are skipped automatically.
 
-# Nigeria and the rest of Africa
-54gene
-Access Bank
-Airtel Africa
-Andela
-Apollo Agriculture
-Autochek
-Bamboo
-Branch
-Brass
-Bumpa
-Carbon
-Cellulant
-Chipper Cash
-Chowdeck
-Cleva
-Copia
-Cowrywise
-Dangote
-Duplo
-Ecobank
-Eden Life
-FairMoney
-Fincra
-Flutterwave
-Geegpay
-Glovo
-Gokada
-Gozem
-Grey
-Helium Health
-Ilara Health
-Interswitch
-Jumia
-Juicyway
-Kippa
-Kobo360
-Konga
-Kuda
-Leatherback
-LemFi
-Lendable
-Lidya
-Lori Systems
-M-KOPA
-Max
-MFS Africa
-Moniepoint
-Mono
-Moove
-mPharma
-MTN
-Nala
-Okra
-Onafriq
-OPay
-Paga
-PalmPay
-Paymob
-Payday
-Payhippo
-Paystack
-PiggyVest
-Prospa
-Pula
-Raenest
-Reliance Health
-Renmoney
-Risevest
-Sabi
-Safaricom
-SeamlessHR
-Sendwave
-Shuttlers
-Standard Bank
-Sun King
-Takealot
-Termii
-TradeDepot
-Trove
-Twiga
-Umba
-Vendease
-Wasoko
-Wave
-Yoco
-Zipline
-
-# Remote-first and remote-friendly employers worldwide
 1Password
+Affirm
 Aha
 Airbnb
 Airbyte
 Airtable
 Alchemy
+Algolia
 Amplitude
 Anthropic
+Anyscale
+Arc
 Articulate
 Asana
+Attio
 Automattic
 Basecamp
 Binance
 BitGo
 Bitpanda
 Brex
+Brilliant
 Buffer
+Cal.com
 Calendly
 Canonical
 Canva
+Carta
+Census
+Chainalysis
 Chainlink Labs
 Chime
 Circle
+CircleCI
+ClassDojo
+Clerk
 ClickUp
 Close
 Cloudflare
 Cockroach Labs
+Codecademy
 Cohere
 Coinbase
 Confluent
 Consensys
+Contentful
+Convex
 Coursera
 Crossover
+Crypto.com
+Dagster
 Databricks
+DataCamp
 Datadog
 dbt Labs
 Deel
+Descript
 Discord
 Doist
+DoorDash
+Drata
 Dropbox
+Dub
 Duolingo
 Elastic
+Epic Games
+Etsy
+Eventbrite
 Figma
 Fireblocks
 Fivetran
 Fly.io
 Framer
+Front
 Gemini
 Ghost
 GitLab
+Glean
 Grafana Labs
+Grammarly
 Gusto
+Harvey
 HashiCorp
+Headspace
 Help Scout
+Hex
 Hightouch
+Hims & Hers
 Hotjar
 HubSpot
 Hubstaff
 Hugging Face
+Inngest
+Instacart
 Intercom
+Jasper
+Khan Academy
+Kickstarter
 Kinsta
 Kraken
+LangChain
+LaunchDarkly
 Ledger
 Linear
+LlamaIndex
 Loom
+Lovable
+Lyft
+Lyra Health
 Mattermost
+Medium
 Mercury
+Metabase
 Miro
 Mistral
 Mixpanel
+Modal
 MongoDB
 Monzo
 Mozilla
+Multiplier
 Mysten Labs
 N26
+Neon
+Netflix
 Netlify
+New Relic
+Niantic
+Noom
 Notion
 Okta
+OKX
 OpenAI
+Oscar Health
 Oyster
+PagerDuty
+Palantir
+Papaya Global
 Parity
+Patreon
 Paxos
+Peloton
+Perplexity
+Pinecone
 Pinterest
+Pitch
 Plaid
+Plain
+PlanetScale
+Pluralsight
 Polygon
 PostHog
+Postman
+Prefect
 Protocol Labs
 Proxify
+Pylon
+Quizlet
 Railway
 Ramp
+Raycast
 Reddit
 Remote
 Render
 Replit
+Resend
+Retool
 Revolut
+Riot Games
 Ripple
 Rippling
 Robinhood
+Roblox
+Runway
 Scale AI
+SentinelOne
 Sentry
 Shopify
 Snowflake
-Sourcegraph
-Stripe
-Supabase
-Tailscale
-Temporal
-Toggl
-Toptal
-Turing
-Twilio
-Twitch
-Udemy
-Uniswap
-Vercel
-Webflow
-Weights & Biases
-Wikimedia
-Wise
-X-Team
-Yoast
-Zapier
-Zendesk
-
-# More African employers
-Aella Credit
-Afriex
-Africa's Talking
-Anchor
-Babban Gona
-Bankly
-Bloc
-Bolt
-Chaka
-Dojah
-eTranzact
-Eversend
-Farmcrowdy
-Fawry
-Field Intelligence
-Gebeya
-Gro Intelligence
-Hello Tractor
-InstaDeep
-Jumo
-Kasha
-Kopo Kopo
-Lipa Later
-MarketForce
-Maplerad
-Mukuru
-MNT-Halan
-Naspers
-Nomba
-OLX
-Orda
-Ozow
-Peach Payments
-Pngme
-Prembly
-Prosus
-Releaf
-Remitly
-Sendy
-Shortlist
-Smile ID
-Stitch
-Sudo Africa
-Swvl
-Tala
-ThriveAgric
-TymeBank
-Union54
-VALR
-Vezeeta
-Yassir
-Youverify
-Zepz
-Zoona
-
-# More remote-first and remote-friendly employers
-Affirm
-Algolia
-Anyscale
-Arc
-Attio
-Brilliant
-Cal.com
-Carta
-Census
-Chainalysis
-CircleCI
-ClassDojo
-Clerk
-Codecademy
-Contentful
-Convex
-Crypto.com
-Dagster
-DataCamp
-Descript
-DoorDash
-Drata
-Dub
-Epic Games
-Etsy
-Eventbrite
-Front
-Glean
-Grammarly
-Harvey
-Headspace
-Hex
-Hims & Hers
-Inngest
-Instacart
-Jasper
-Khan Academy
-Kickstarter
-LangChain
-LaunchDarkly
-LlamaIndex
-Lovable
-Lyft
-Lyra Health
-Medium
-Metabase
-Modal
-Multiplier
-Neon
-Netflix
-New Relic
-Niantic
-Noom
-OKX
-Oscar Health
-PagerDuty
-Palantir
-Papaya Global
-Patreon
-Peloton
-Perplexity
-Pinecone
-PlanetScale
-Pitch
-Plain
-Pluralsight
-Postman
-Prefect
-Pylon
-Quizlet
-Raycast
-Resend
-Retool
-Riot Games
-Roblox
-Runway
-SentinelOne
 Snyk
 SoFi
+Sourcegraph
 Spring Health
 Squarespace
+Stripe
 Substack
 Sumo Logic
+Supabase
 Superhuman
 Synthesia
+Tailscale
+Temporal
 Tines
+Toggl
+Toptal
 Trigger.dev
+Turing
 Turso
+Twilio
+Twitch
 Udacity
+Udemy
+Uniswap
 Unity
 Upwork
 Vanta
 Velocity Global
+Vercel
 Warp
 Watershed
 Wayfair
 Wealthsimple
 Weaviate
+Webflow
+Weights & Biases
+Wikimedia
+Wise
 Wiz
 WorkOS
 Writer
+X-Team
 Yelp
+Yoast
+Zapier
 Zed
+Zendesk
 Zillow

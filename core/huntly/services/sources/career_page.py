@@ -29,6 +29,17 @@ def _walk(node):
                 yield from _walk(node[key])
 
 
+def job_postings(html: str) -> list[dict]:
+    """Every schema.org JobPosting in a page's JSON-LD blocks."""
+    found = []
+    for block in LD_JSON.findall(html):
+        try:
+            found += list(_walk(json.loads(block.strip())))
+        except ValueError:
+            continue
+    return found
+
+
 def _location(posting: dict) -> str | None:
     loc = posting.get("jobLocation")
     loc = loc[0] if isinstance(loc, list) and loc else loc
@@ -53,26 +64,21 @@ class CareerPageSource:
         resp = ctx.fetch(config["url"], headers={"Accept": "text/html"})
         require_ok(resp, "Career page")
         jobs = []
-        for block in LD_JSON.findall(resp.text):
-            try:
-                data = json.loads(block.strip())
-            except ValueError:
-                continue
-            for p in _walk(data):
-                org = p.get("hiringOrganization")
-                company = org.get("name") if isinstance(org, dict) else org
-                jobs.append(
-                    RawJob(
-                        title=str(p.get("title", "")),
-                        url=p.get("url") or resp.url,
-                        description=str(p.get("description", "")),
-                        company=config.get("company") or company,
-                        location=_location(p),
-                        remote=(p.get("jobLocationType") == "TELECOMMUTE") or None,
-                        posted_at=parse_dt(p.get("datePosted")),
-                        external_id=str(p.get("identifier", {}).get("value") if isinstance(p.get("identifier"), dict) else p.get("url") or ""),
-                    )
+        for p in job_postings(resp.text):
+            org = p.get("hiringOrganization")
+            company = org.get("name") if isinstance(org, dict) else org
+            jobs.append(
+                RawJob(
+                    title=str(p.get("title", "")),
+                    url=p.get("url") or resp.url,
+                    description=str(p.get("description", "")),
+                    company=config.get("company") or company,
+                    location=_location(p),
+                    remote=(p.get("jobLocationType") == "TELECOMMUTE") or None,
+                    posted_at=parse_dt(p.get("datePosted")),
+                    external_id=str(p.get("identifier", {}).get("value") if isinstance(p.get("identifier"), dict) else p.get("url") or ""),
                 )
+            )
         if not jobs:
             raise SourceError("No schema.org JobPosting data found on this page")
         return jobs

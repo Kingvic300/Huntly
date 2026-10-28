@@ -153,3 +153,37 @@ def test_bundled_starter_list_loads_once_and_respects_turned_off(ctx):
         boards[0].enabled = False
         assert companies.load_seed(s) == 0  # same list version: nothing re-added, turned-off stays off
         assert s.get(Company, boards[0].id).enabled is False
+
+
+def test_workable_bamboohr_breezy(with_profile, fake_fetch):
+    assert companies.board_from_url("https://apply.workable.com/kuda/j/82E249C10F") == ("workable", "kuda")
+    assert companies.board_from_url("https://chowdeck.bamboohr.com/careers/34") == ("bamboohr", "chowdeck")
+    assert companies.board_from_url("https://busha.breezy.hr/p/028b-bdm") == ("breezy", "busha")
+    assert companies.board_from_url("https://apply.workable.com/j/82E249C10F") is None  # a job link, not a board
+
+    ctx = with_profile
+    fake_fetch.routes["https://www.workable.com/api/accounts/kuda"] = (200, {"name": "Kuda", "jobs": [
+        {"title": "Backend Engineer", "shortcode": "AB1", "url": "https://apply.workable.com/j/AB1", "description": "<p>Python, PostgreSQL</p>", "city": "Lagos", "country": "Nigeria", "telecommuting": False, "published_on": "2026-10-20"},
+    ]})
+    fake_fetch.routes["https://chowdeck.bamboohr.com/careers/list"] = (200, {"result": [
+        {"id": "34", "jobOpeningName": "Senior Backend Engineer", "location": {"city": "Ikoyi", "state": "Lagos"}, "atsLocation": {}, "locationType": "2"},
+        {"id": "35", "jobOpeningName": "Rider Operations Lead", "location": {"city": "Lagos"}, "locationType": "0"},
+    ]})
+    fake_fetch.routes["https://chowdeck.bamboohr.com/careers/34/detail"] = (200, {"result": {"jobOpening": {"description": "<p>Python and Docker</p>", "datePosted": "2026-10-25"}}})
+    fake_fetch.routes["https://busha.breezy.hr/json"] = (200, [
+        {"id": "9", "friendly_id": "9-python-developer", "name": "Python Developer", "published_date": "2026-10-08T11:57:12Z", "location": {"city": "Lagos", "country": {"name": "Nigeria"}, "is_remote": True}, "company": {"name": "Busha"}},
+    ])
+    fake_fetch.routes["https://busha.breezy.hr/p/9-python-developer"] = (200, '<script type="application/ld+json">{"@type":"JobPosting","title":"Python Developer","description":"<p>FastAPI and AWS</p>"}</script>')
+    dir_id = _directory(ctx, ("workable", "kuda"), ("bamboohr", "chowdeck"), ("breezy", "busha"))
+    with ctx.db.session() as s:
+        s.query(Company).filter_by(slug="chowdeck").one().name = "Chowdeck"
+    out = collect_all(ctx, "manual", source_ids=[dir_id])
+    assert out["new"] == 3 and out["errors"] == 0
+    with ctx.db.session() as s:
+        jobs = {j.title: j for j in s.query(Job).all()}
+    assert set(jobs) == {"Backend Engineer", "Senior Backend Engineer", "Python Developer"}
+    assert jobs["Backend Engineer"].company == "Kuda" and jobs["Backend Engineer"].location == "Lagos, Nigeria"
+    chow = jobs["Senior Backend Engineer"]
+    assert chow.company == "Chowdeck" and chow.remote is False and "Docker" in chow.description  # hybrid, text fetched
+    assert jobs["Python Developer"].remote is True and "FastAPI" in jobs["Python Developer"].description
+    assert "https://chowdeck.bamboohr.com/careers/35/detail" not in [u for u, *_ in fake_fetch.calls]

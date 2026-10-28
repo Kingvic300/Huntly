@@ -9,6 +9,7 @@
 * Jobicy remote jobs API    – https://jobicy.com/jobs-rss-feed (terms: credit Jobicy, link to the original job URL)
 * Ashby Job Postings API    – https://developers.ashbyhq.com/docs/public-job-posting-api
 * SmartRecruiters Posting API (public, no key) and Recruitee careers-site API (public, no key)
+* Workable, BambooHR and Breezy HR public careers-page APIs (no key); widely used by Nigerian startups
 """
 
 from __future__ import annotations
@@ -17,6 +18,7 @@ import html
 import re
 
 from huntly.services.sources.base import SLUG, RawJob, SourceContext, parse_dt, require_ok
+from huntly.services.sources.career_page import job_postings
 
 
 # Workplace types the hiring platforms report, by name: remote, hybrid or on-site.
@@ -375,3 +377,127 @@ class RecruiteeSource:
                 )
             )
         return jobs
+
+
+def _subdomain(config: dict) -> str:
+    value = str(config.get("company", "")).strip().lower()
+    if not _DNS_LABEL.match(value):
+        raise ValueError("'company' must be the name in the company's careers address, such as 'acme'")
+    return value
+
+
+def _place(*parts) -> str | None:
+    return ", ".join(p for p in parts if isinstance(p, str) and p) or None
+
+
+class WorkableSource:
+    kind = "workable"
+    label = "Workable company board"
+    needs_secret = None
+
+    def validate(self, config: dict) -> dict:
+        return {"company": _subdomain(config)}
+
+    def fetch(self, config: dict, ctx: SourceContext) -> list[RawJob]:
+        company = config["company"]
+        resp = ctx.fetch(f"https://www.workable.com/api/accounts/{company}", params={"details": "true"})
+        require_ok(resp, "Workable")
+        data = resp.json()
+        return [
+            RawJob(
+                title=j.get("title", ""),
+                url=j.get("url") or j.get("shortlink"),
+                description=f"{j.get('description') or ''}\n{j.get('requirements') or ''}\n{j.get('benefits') or ''}",
+                company=data.get("name") or company,
+                location=_place(j.get("city"), j.get("country")),
+                remote=True if j.get("telecommuting") else None,
+                posted_at=parse_dt(j.get("published_on") or j.get("created_at")),
+                external_id=f"workable:{company}:{j.get('shortcode')}",
+            )
+            for j in (data.get("jobs") or [])[:500]
+        ]
+
+
+class BambooHRSource:
+    kind = "bamboohr"
+    label = "BambooHR company board"
+    needs_secret = None
+    _LOCATION_TYPE = {"0": False, "1": True, "2": False}  # on-site, remote, hybrid
+
+    def validate(self, config: dict) -> dict:
+        return {"company": _subdomain(config)}
+
+    def fetch(self, config: dict, ctx: SourceContext) -> list[RawJob]:
+        company = config["company"]
+        resp = ctx.fetch(f"https://{company}.bamboohr.com/careers/list")
+        require_ok(resp, "BambooHR")
+        jobs = []
+        for j in (resp.json().get("result") or [])[:500]:
+            job_id = str(j.get("id", ""))
+            if not _ID.match(job_id):
+                continue
+            loc, ats = j.get("location") or {}, j.get("atsLocation") or {}
+            jobs.append(
+                RawJob(
+                    title=j.get("jobOpeningName", ""),
+                    url=f"https://{company}.bamboohr.com/careers/{job_id}",
+                    company=company,
+                    location=_place(loc.get("city") or ats.get("city"), loc.get("state") or ats.get("state"), ats.get("country")),
+                    remote=self._LOCATION_TYPE.get(str(j.get("locationType")), True if j.get("isRemote") else None),
+                    external_id=f"bamboohr:{company}:{job_id}",
+                    extra={"company": company, "id": job_id},
+                )
+            )
+        return jobs
+
+    def describe(self, job: RawJob, ctx: SourceContext) -> None:
+        """The list has no descriptions; fetch one opening's text. Call only for jobs worth keeping."""
+        resp = ctx.fetch(f"https://{job.extra['company']}.bamboohr.com/careers/{job.extra['id']}/detail")
+        require_ok(resp, "BambooHR")
+        opening = (resp.json().get("result") or {}).get("jobOpening") or {}
+        job.description = opening.get("description") or ""
+        job.posted_at = parse_dt(opening.get("datePosted")) or job.posted_at
+
+
+class BreezySource:
+    kind = "breezy"
+    label = "Breezy HR company board"
+    needs_secret = None
+
+    def validate(self, config: dict) -> dict:
+        return {"company": _subdomain(config)}
+
+    def fetch(self, config: dict, ctx: SourceContext) -> list[RawJob]:
+        company = config["company"]
+        resp = ctx.fetch(f"https://{company}.breezy.hr/json")
+        require_ok(resp, "Breezy HR")
+        jobs = []
+        for j in resp.json()[:500] if isinstance(resp.json(), list) else []:
+            slug = str(j.get("friendly_id", ""))
+            if not re.match(r"^[A-Za-z0-9-]{1,200}$", slug):
+                continue
+            loc = j.get("location") or {}
+            page = f"https://{company}.breezy.hr/p/{slug}"
+            jobs.append(
+                RawJob(
+                    title=j.get("name", ""),
+                    url=page,
+                    company=(j.get("company") or {}).get("name") or company,
+                    location=_place(loc.get("city"), (loc.get("country") or {}).get("name")) or loc.get("name"),
+                    remote=True if loc.get("is_remote") else None,
+                    posted_at=parse_dt(j.get("published_date")),
+                    external_id=f"breezy:{company}:{j.get('id')}",
+                    extra={"page": page},
+                )
+            )
+        return jobs
+
+    def describe(self, job: RawJob, ctx: SourceContext) -> None:
+        """The list has no descriptions; read the posting page's own JobPosting data."""
+        resp = ctx.fetch(job.extra["page"], headers={"Accept": "text/html"})
+        require_ok(resp, "Breezy HR")
+        postings = job_postings(resp.text)
+        if postings:
+            job.description = str(postings[0].get("description", ""))
+            if postings[0].get("jobLocationType") == "TELECOMMUTE" and job.remote is None:
+                job.remote = True
