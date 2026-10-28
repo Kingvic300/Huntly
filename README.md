@@ -41,12 +41,13 @@ Licensed under [Apache-2.0](LICENSE).
 | **Applications** | A board by stage. Each application walks you through making an ATS-friendly CV and cover letter, writing the email, and approving it, with an ATS readiness report and notes. |
 | **Approvals** | The email exactly as the recipient will see it, a checklist you tick before approving, time-limited approval, Gmail drafts, reply status and follow-ups. |
 | **Profile** | Import your existing CV (PDF/Word, parsed locally), then edit every section: contact details including LinkedIn, GitHub and website, experience, education, projects and preferences. Plus your file library. |
-| **Sources** | RSS/Atom, Greenhouse, Lever, Ashby, Remotive, Remote OK, Himalayas, Jobicy, Arbeitnow, company career pages (schema.org `JobPosting`). Health, last run and errors per source. |
+| **Sources** | Remote job boards (Remotive, Remote OK, Himalayas, Jobicy, Arbeitnow) and a company directory, added for you on your first search. Plus RSS/Atom, single company boards (Greenhouse, Lever, Ashby, SmartRecruiters, Recruitee) and career pages (schema.org `JobPosting`). Health, last run and errors per source. |
 | **Insights** | Found vs applied over time, match distribution, where applications stand, jobs per source, demand for your skills. |
 | **Settings** | Search interval, digest time (Africa/Lagos), reply tracking and follow-up timing, AI options, approval expiry, accounts and keys, vault, privacy, activity log. |
 
-The window has a native menu bar (File / Edit / Go / Help with keyboard shortcuts) and a
-system-tray icon (show, search now, quit). Global search: <kbd>Ctrl</kbd>+<kbd>K</kbd>.
+There is no menu bar on Linux and Windows; every action is in the app and has a keyboard
+shortcut (macOS keeps a minimal menu, which its copy and paste shortcuts need). A system-tray
+icon offers show, search now and quit. Global search: <kbd>Ctrl</kbd>+<kbd>K</kbd>.
 
 ### Your CV, imported and tailored
 
@@ -163,7 +164,39 @@ All optional — enable only what you use.
 | Himalayas | `himalayas.app/jobs/api` | Public API; jobs link back to Himalayas. |
 | Jobicy | `jobicy.com/api/v2/remote-jobs` | Public API; jobs link to the original Jobicy listing, as its terms require. |
 | Ashby | `api.ashbyhq.com/posting-api/job-board/{board}` | Public Job Postings API for companies hiring through Ashby. |
+| SmartRecruiters | `api.smartrecruiters.com/v1/companies/{company}/postings` | Public Posting API. A job's full text is fetched only when its title fits your profile. |
+| Recruitee | `{company}.recruitee.com/api/offers/` | Public careers-site API. |
 | Career page | any URL | Reads only schema.org `JobPosting` JSON-LD the site publishes. No scraping, no JS. |
+
+### Default sources
+
+When you finish onboarding, Huntly searches straight away. That first search adds Remotive,
+Remote OK, Himalayas and Jobicy (searching for the first target role in your profile),
+Arbeitnow (remote jobs only) and the company directory. This happens once; edit or remove them
+on the Sources page.
+
+Huntly searches only while it is open. When you open it and the last search is older than your
+search interval (60 minutes by default), a search starts about 20 seconds later.
+
+### Company directory
+
+The directory follows companies' own job boards on Greenhouse, Lever, Ashby, SmartRecruiters
+and Recruitee, from startups in Lagos to remote-first companies anywhere:
+
+- **Starter list:** about 170 boards with open jobs ship with the app, including Nigerian
+  and other African employers (`core/huntly/assets/companies.json`, rebuilt with
+  `scripts/build_company_seed.py`).
+- **Grows by itself:** each search looks up a few employers that your other sources found and
+  adds the ones with a public board. A job link that points at a hiring board adds that
+  company too.
+- **Your lists:** paste board links or `platform:name` entries on the Sources page, as many as
+  you like.
+- **Rotation:** each search checks the companies checked longest ago, 300 by default
+  (50–2,000). The Sources page shows how often each company comes round.
+- **Only matches are kept:** a job is stored when its title fits a target role or it names two
+  of your skills, so thousands of companies don't flood your list.
+
+A board that returns *not found* is turned off. Turn off any company you don't want.
 
 All fetches go through an SSRF guard (http/https only, public addresses only, re-checked on
 every redirect, size and time limits). Respect each site's terms of service.

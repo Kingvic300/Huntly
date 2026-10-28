@@ -1,3 +1,6 @@
+from datetime import datetime, timedelta, timezone
+
+from huntly.models import JobRun
 from huntly.scheduler import LocalScheduler
 from huntly.services import store
 
@@ -27,3 +30,20 @@ def test_digest_skipped_when_locked(ctx, fake_gmail):
     sched = LocalScheduler(ctx)
     sched._digest()
     assert fake_gmail.sent == []
+
+
+def test_search_runs_soon_after_opening_when_due(ctx):
+    sched = LocalScheduler(ctx)
+    sched.start()
+    try:
+        first = sched.sched.get_job("collect").next_run_time
+        assert first - datetime.now(timezone.utc) < timedelta(minutes=1)  # never searched: soon after opening
+        with ctx.db.session() as s:
+            s.add(JobRun(kind="collect", trigger="manual", started_at=datetime.now(timezone.utc) - timedelta(minutes=10)))
+        sched.reload()
+        nxt = sched.sched.get_job("collect").next_run_time
+        assert timedelta(minutes=45) < nxt - datetime.now(timezone.utc) < timedelta(minutes=55)  # 60-minute rhythm kept
+        sched.collect_soon()
+        assert sched.sched.get_job("collect").next_run_time - datetime.now(timezone.utc) < timedelta(seconds=10)
+    finally:
+        sched.shutdown()

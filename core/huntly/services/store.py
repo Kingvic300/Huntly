@@ -37,6 +37,7 @@ DEFAULT_SETTINGS: dict[str, Any] = {
     "follow_up_after_days": 7,
     "reply_body_analysis": False,
     "auto_update": True,
+    "directory_batch_size": 300,
 }
 
 

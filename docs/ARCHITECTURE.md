@@ -40,6 +40,11 @@ characters removed, injection heuristics) → dedupe by URL hash → `matching.s
 (deterministic, explainable) → optional Groq assessment for the top new jobs (blended 70/30)
 → stored → notification.
 
+The company directory (`services/companies.py`) is a source of its own: each run it looks up a
+few employer names from other sources on the hiring platforms (Greenhouse, Lever, Ashby,
+SmartRecruiters, Recruitee), then checks the boards checked longest ago, a batch at a time
+(`directory_batch_size`), and stores only jobs that pass `matching.matches_profile`.
+
 ## Data flow: applying
 
 1. *Start application* creates an `Application` for a job.
@@ -57,6 +62,8 @@ characters removed, injection heuristics) → dedupe by URL hash → `matching.s
 
 APScheduler `BackgroundScheduler` with `Africa/Lagos`: an interval job for collection and a
 cron job for the digest. Jobs coalesce, never overlap, and run only while the app is open.
+The first collection after start-up runs one interval after the last one, or about 20 seconds
+after opening if that time has passed; finishing onboarding brings it forward to now.
 If the vault is locked or Gmail is not connected, the digest is skipped with a notification.
 
 ## Database

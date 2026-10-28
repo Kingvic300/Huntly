@@ -1,0 +1,216 @@
+# Employers to look up when building core/huntly/assets/companies.json.
+# One name per line. Names without a public Greenhouse, Lever, Ashby, SmartRecruiters
+# or Recruitee board are skipped automatically.
+
+# Nigeria and the rest of Africa
+54gene
+Access Bank
+Airtel Africa
+Andela
+Apollo Agriculture
+Autochek
+Bamboo
+Branch
+Brass
+Bumpa
+Carbon
+Cellulant
+Chipper Cash
+Chowdeck
+Cleva
+Copia
+Cowrywise
+Dangote
+Duplo
+Ecobank
+Eden Life
+FairMoney
+Fincra
+Flutterwave
+Geegpay
+Glovo
+Gokada
+Gozem
+Grey
+Helium Health
+Ilara Health
+Interswitch
+Jumia
+Juicyway
+Kippa
+Kobo360
+Konga
+Kuda
+Leatherback
+LemFi
+Lendable
+Lidya
+Lori Systems
+M-KOPA
+Max
+MFS Africa
+Moniepoint
+Mono
+Moove
+mPharma
+MTN
+Nala
+Okra
+Onafriq
+OPay
+Paga
+PalmPay
+Paymob
+Payday
+Payhippo
+Paystack
+PiggyVest
+Prospa
+Pula
+Raenest
+Reliance Health
+Renmoney
+Risevest
+Sabi
+Safaricom
+SeamlessHR
+Sendwave
+Shuttlers
+Standard Bank
+Sun King
+Takealot
+Termii
+TradeDepot
+Trove
+Twiga
+Umba
+Vendease
+Wasoko
+Wave
+Yoco
+Zipline
+
+# Remote-first and remote-friendly employers worldwide
+1Password
+Aha
+Airbnb
+Airbyte
+Airtable
+Alchemy
+Amplitude
+Anthropic
+Articulate
+Asana
+Automattic
+Basecamp
+Binance
+BitGo
+Bitpanda
+Brex
+Buffer
+Calendly
+Canonical
+Canva
+Chainlink Labs
+Chime
+Circle
+ClickUp
+Close
+Cloudflare
+Cockroach Labs
+Cohere
+Coinbase
+Confluent
+Consensys
+Coursera
+Crossover
+Databricks
+Datadog
+dbt Labs
+Deel
+Discord
+Doist
+Dropbox
+Duolingo
+Elastic
+Figma
+Fireblocks
+Fivetran
+Fly.io
+Framer
+Gemini
+Ghost
+GitLab
+Grafana Labs
+Gusto
+HashiCorp
+Help Scout
+Hightouch
+Hotjar
+HubSpot
+Hubstaff
+Hugging Face
+Intercom
+Kinsta
+Kraken
+Ledger
+Linear
+Loom
+Mattermost
+Mercury
+Miro
+Mistral
+Mixpanel
+MongoDB
+Monzo
+Mozilla
+Mysten Labs
+N26
+Netlify
+Notion
+Okta
+OpenAI
+Oyster
+Parity
+Paxos
+Pinterest
+Plaid
+Polygon
+PostHog
+Protocol Labs
+Proxify
+Railway
+Ramp
+Reddit
+Remote
+Render
+Replit
+Revolut
+Ripple
+Rippling
+Robinhood
+Scale AI
+Sentry
+Shopify
+Snowflake
+Sourcegraph
+Stripe
+Supabase
+Tailscale
+Temporal
+Toggl
+Toptal
+Turing
+Twilio
+Twitch
+Udemy
+Uniswap
+Vercel
+Webflow
+Weights & Biases
+Wikimedia
+Wise
+X-Team
+Yoast
+Zapier
+Zendesk

@@ -37,6 +37,9 @@ Status codes: `401` bad token · `403` non-loopback host · `423` vault locked �
 | GET | `/sources/catalog` | Source types and their config fields |
 | GET/POST | `/sources` | List / create `{kind, name, config, enabled}` |
 | PATCH/DELETE | `/sources/{id}` | Update / remove |
+| GET | `/companies?q=&limit=&offset=` | Company directory page plus totals by platform |
+| POST | `/companies/import` | `{text}` board links or `platform:name` entries; returns added / already tracked / not recognised |
+| PATCH | `/companies/{id}` | `{enabled}` turn a company on or off |
 | POST | `/collect` | `{source_ids?}` start a collection run in the background |
 | GET/PUT | `/profile` | Profile and completeness |
 

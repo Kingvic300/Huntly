@@ -123,3 +123,10 @@ def blend(deterministic: float, llm_fit: int | None) -> float:
     if llm_fit is None:
         return deterministic
     return round(0.7 * deterministic + 0.3 * llm_fit, 1)
+
+
+def matches_profile(breakdown: dict) -> bool:
+    """Worth keeping from a broad source: the title fits a target role, or the text names two of your skills."""
+    if breakdown["excluded"]:
+        return False
+    return breakdown["parts"]["title"] >= WEIGHTS["title"] * 0.5 or len(breakdown["matched_skills"]) >= 2

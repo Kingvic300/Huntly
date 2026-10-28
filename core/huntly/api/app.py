@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from huntly import __version__
-from huntly.api.routes import analytics, applications, jobs, system
+from huntly.api.routes import analytics, applications, companies, jobs, system
 from huntly.context import AppContext
 from huntly.security.vault import VaultLocked
 
@@ -58,6 +58,6 @@ def create_app(ctx: AppContext, api_token: str) -> FastAPI:
         log.exception("unhandled error")
         return JSONResponse({"detail": f"Internal error: {type(exc).__name__}"}, status_code=500)
 
-    for r in (system.router, jobs.router, applications.router, analytics.router):
+    for r in (system.router, jobs.router, companies.router, applications.router, analytics.router):
         app.include_router(r, prefix="/api")
     return app

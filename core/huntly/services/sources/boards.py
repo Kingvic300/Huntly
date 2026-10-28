@@ -8,11 +8,13 @@
 * Himalayas jobs API        – https://himalayas.app/api (links back to Himalayas)
 * Jobicy remote jobs API    – https://jobicy.com/jobs-rss-feed (terms: credit Jobicy, link to the original job URL)
 * Ashby Job Postings API    – https://developers.ashbyhq.com/docs/public-job-posting-api
+* SmartRecruiters Posting API (public, no key) and Recruitee careers-site API (public, no key)
 """
 
 from __future__ import annotations
 
 import html
+import re
 
 from huntly.services.sources.base import SLUG, RawJob, SourceContext, parse_dt, require_ok
 
@@ -34,7 +36,8 @@ class GreenhouseSource:
 
     def fetch(self, config: dict, ctx: SourceContext) -> list[RawJob]:
         board = config["board"]
-        resp = ctx.fetch(f"https://boards-api.greenhouse.io/v1/boards/{board}/jobs", params={"content": "true"})
+        # Large employers' boards with full job text run to several megabytes (Cloudflare: about 8 MB).
+        resp = ctx.fetch(f"https://boards-api.greenhouse.io/v1/boards/{board}/jobs", params={"content": "true"}, max_bytes=25 * 1024 * 1024)
         require_ok(resp, "Greenhouse")
         jobs = []
         for j in resp.json().get("jobs", [])[:500]:
@@ -286,6 +289,85 @@ class AshbySource:
                     remote=bool(j.get("isRemote")) or None,
                     posted_at=parse_dt(j.get("publishedAt")),
                     external_id=f"ashby:{board}:{j.get('id')}",
+                )
+            )
+        return jobs
+
+
+_ID = re.compile(r"^[A-Za-z0-9-]{1,64}$")
+_DNS_LABEL = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$")
+
+
+class SmartRecruitersSource:
+    kind = "smartrecruiters"
+    label = "SmartRecruiters company board"
+    needs_secret = None
+
+    def validate(self, config: dict) -> dict:
+        return {"company": _slug(config, "company")}
+
+    def fetch(self, config: dict, ctx: SourceContext) -> list[RawJob]:
+        company = config["company"]
+        resp = ctx.fetch(f"https://api.smartrecruiters.com/v1/companies/{company}/postings", params={"limit": "100"})
+        require_ok(resp, "SmartRecruiters")
+        jobs = []
+        for j in resp.json().get("content", []):
+            job_id = str(j.get("id", ""))
+            if not _ID.match(job_id):
+                continue
+            loc = j.get("location") or {}
+            country = next((f.get("valueLabel") for f in j.get("customField") or [] if f.get("fieldId") == "COUNTRY"), None)
+            jobs.append(
+                RawJob(
+                    title=j.get("name", ""),
+                    url=f"https://jobs.smartrecruiters.com/{company}/{job_id}",
+                    company=(j.get("company") or {}).get("name") or company,
+                    location=", ".join(x for x in [loc.get("city"), country or str(loc.get("country") or "").upper()] if x) or None,
+                    remote=bool(loc.get("remote")) or None,
+                    posted_at=parse_dt(j.get("releasedDate")),
+                    external_id=f"smartrecruiters:{company}:{job_id}",
+                    extra={"company": company, "id": job_id},
+                )
+            )
+        return jobs
+
+    def describe(self, job: RawJob, ctx: SourceContext) -> None:
+        """The postings list has no descriptions; fetch one posting's text. Call only for jobs worth keeping."""
+        resp = ctx.fetch(f"https://api.smartrecruiters.com/v1/companies/{job.extra['company']}/postings/{job.extra['id']}")
+        require_ok(resp, "SmartRecruiters")
+        sections = (resp.json().get("jobAd") or {}).get("sections") or {}
+        job.description = "\n".join(f"{x.get('title', '')}\n{x.get('text', '')}" for x in sections.values() if isinstance(x, dict))
+
+
+class RecruiteeSource:
+    kind = "recruitee"
+    label = "Recruitee company board"
+    needs_secret = None
+
+    def validate(self, config: dict) -> dict:
+        value = str(config.get("company", "")).strip().lower()
+        if not _DNS_LABEL.match(value):
+            raise ValueError("'company' must be the name before .recruitee.com, such as 'acme'")
+        return {"company": value}
+
+    def fetch(self, config: dict, ctx: SourceContext) -> list[RawJob]:
+        company = config["company"]
+        resp = ctx.fetch(f"https://{company}.recruitee.com/api/offers/")
+        require_ok(resp, "Recruitee")
+        jobs = []
+        for j in resp.json().get("offers", [])[:500]:
+            if j.get("status") not in (None, "published"):
+                continue
+            jobs.append(
+                RawJob(
+                    title=j.get("title", ""),
+                    url=j.get("careers_url"),
+                    description=f"{j.get('description') or ''}\n{j.get('requirements') or ''}",
+                    company=j.get("company_name") or company,
+                    location=j.get("location"),
+                    remote=bool(j.get("remote")) or None,
+                    posted_at=parse_dt(str(j.get("published_at") or "").replace(" UTC", "+00:00")),
+                    external_id=f"recruitee:{company}:{j.get('id')}",
                 )
             )
         return jobs

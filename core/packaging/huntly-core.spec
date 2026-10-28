@@ -5,6 +5,7 @@ block_cipher = None
 
 datas = [
     ("../huntly/assets/fonts", "huntly/assets/fonts"),
+    ("../huntly/assets/companies.json", "huntly/assets"),
     ("../huntly/migrations", "huntly/migrations"),
 ]
 datas += collect_data_files("googleapiclient")  # static Gmail discovery document

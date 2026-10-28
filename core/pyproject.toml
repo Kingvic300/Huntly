@@ -13,7 +13,7 @@ requires-python = ">=3.11"
 include = ["huntly*"]
 
 [tool.setuptools.package-data]
-huntly = ["assets/fonts/*.ttf", "migrations/*.py", "migrations/*.ini", "migrations/versions/*.py"]
+huntly = ["assets/fonts/*.ttf", "assets/companies.json", "migrations/*.py", "migrations/*.ini", "migrations/versions/*.py"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

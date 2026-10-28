@@ -6,6 +6,7 @@ import {
   type Application,
   type Approval,
   type AuditEntry,
+  type CompanyPage,
   type Credential,
   type Doc,
   type FollowUp,
@@ -28,6 +29,7 @@ export const qk = {
   jobs: (params: Record<string, unknown>) => ["jobs", params],
   job: (id: number) => ["job", id],
   sources: ["sources"],
+  companies: (q: string) => ["companies", q],
   catalog: ["sources", "catalog"],
   applications: ["applications"],
   application: (id: number) => ["application", id],
@@ -60,6 +62,8 @@ export function useJobs(params: Record<string, string | number | boolean | undef
 }
 export const useJob = (id: number | null) => useQuery({ queryKey: qk.job(id ?? 0), queryFn: () => api<Job>(`/jobs/${id}`), enabled: !!id });
 export const useSources = () => useQuery({ queryKey: qk.sources, queryFn: () => api<Source[]>("/sources") });
+export const useCompanies = (q: string) =>
+  useQuery({ queryKey: qk.companies(q), queryFn: () => api<CompanyPage>(`/companies?${new URLSearchParams({ q, limit: "100" })}`), placeholderData: (prev) => prev });
 export const useCatalog = () => useQuery({ queryKey: qk.catalog, queryFn: () => api<SourceKind[]>("/sources/catalog"), staleTime: Infinity });
 export const useApplications = () => useQuery({ queryKey: qk.applications, queryFn: () => api<Application[]>("/applications") });
 export const useApplication = (id: number | null) => useQuery({ queryKey: qk.application(id ?? 0), queryFn: () => api<Application>(`/applications/${id}`), enabled: !!id });

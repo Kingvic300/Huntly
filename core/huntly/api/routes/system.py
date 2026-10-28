@@ -150,6 +150,8 @@ def onboarding_complete(ctx: AppContext = Depends(require_unlocked)):
     with ctx.db.session() as s:
         store.set_setting(s, "onboarding_complete", True)
         store.audit(s, "user", "onboarding.completed", "settings")
+    if ctx.scheduler:
+        ctx.scheduler.collect_soon()  # first search adds the default sources, so jobs arrive right away
     return {"ok": True}
 
 
@@ -277,6 +279,7 @@ class SettingsIn(BaseModel):
     follow_up_after_days: int | None = Field(None, ge=2, le=60)
     reply_body_analysis: bool | None = None
     auto_update: bool | None = None
+    directory_batch_size: int | None = Field(None, ge=50, le=2000)
 
 
 @router.get("/settings")

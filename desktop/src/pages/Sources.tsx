@@ -1,6 +1,7 @@
 import { KeyRound, Pencil, Play, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { CompanyDirectory } from "@/components/CompanyDirectory";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog, Dialog, DialogContent } from "@/components/ui/dialog";
 import { Field, Input } from "@/components/ui/input";
@@ -14,6 +15,8 @@ const BLURB: Record<string, string> = {
   greenhouse: "A company's Greenhouse job board",
   lever: "A company's Lever job board",
   ashby: "A company's Ashby job board",
+  smartrecruiters: "A company's SmartRecruiters job board",
+  recruitee: "A company's Recruitee job board",
   remotive: "Remote jobs from Remotive",
   remoteok: "Remote jobs from Remote OK",
   himalayas: "Remote jobs from Himalayas",
@@ -21,6 +24,8 @@ const BLURB: Record<string, string> = {
   arbeitnow: "Jobs from the Arbeitnow board",
   career_page: "A careers page that publishes job data",
 };
+
+const DIRECTORY = "company_directory";
 
 function SourceDialog({ open, onOpenChange, editing, catalog }: { open: boolean; onOpenChange: (o: boolean) => void; editing: Source | null; catalog: SourceKind[] }) {
   const [kind, setKind] = useState<string | null>(editing?.kind ?? null);
@@ -119,7 +124,7 @@ export default function Sources() {
   const run = useAction((ids: number[]) => api("/collect", { method: "POST", json: { source_ids: ids } }), { success: "Searching now", invalidate: [qk.scheduler] });
   const del = useAction((id: number) => api(`/sources/${id}`, { method: "DELETE" }), { success: "Source removed", invalidate: [qk.sources], onSuccess: () => setToDelete(null) });
   const configured = new Set(creds.data?.filter((c) => c.configured).map((c) => c.name));
-  const label = (k: string) => catalog.data?.find((c) => c.kind === k)?.label ?? k;
+  const label = (k: string) => (k === DIRECTORY ? "Companies' own job boards" : catalog.data?.find((c) => c.kind === k)?.label ?? k);
   const next = sched.data?.jobs?.find((j) => j.id === "collect")?.next_run;
 
   return (
@@ -183,9 +188,11 @@ export default function Sources() {
                     <Button size="icon-sm" variant="ghost" aria-label={`Search ${s.name} now`} title="Search now" onClick={() => run.mutate([s.id])} disabled={sched.data?.collecting || !s.enabled}>
                       <Play />
                     </Button>
-                    <Button size="icon-sm" variant="ghost" aria-label={`Edit ${s.name}`} title="Edit" onClick={() => setDialog({ open: true, editing: s })}>
-                      <Pencil />
-                    </Button>
+                    {s.kind !== DIRECTORY ? (
+                      <Button size="icon-sm" variant="ghost" aria-label={`Edit ${s.name}`} title="Edit" onClick={() => setDialog({ open: true, editing: s })}>
+                        <Pencil />
+                      </Button>
+                    ) : null}
                     <Button size="icon-sm" variant="ghost" aria-label={`Remove ${s.name}`} title="Remove" onClick={() => setToDelete(s)}>
                       <Trash2 />
                     </Button>
@@ -198,7 +205,7 @@ export default function Sources() {
           <EmptyState
             className="px-0"
             title="Huntly isn't watching anywhere yet"
-            description="Add a job feed, a company's Greenhouse or Lever board, Remotive, Arbeitnow, a careers page, or an X search."
+            description="Your first search adds the remote job boards and the company directory. You can also add a job feed, a company's board, or a careers page."
             action={
               <Button variant="primary" onClick={() => setDialog({ open: true, editing: null })}>
                 <Plus /> Add your first source
@@ -206,6 +213,9 @@ export default function Sources() {
             }
           />
         )}
+      </div>
+      <div className="px-7 pb-8">
+        <CompanyDirectory />
       </div>
       {dialog.open && catalog.data ? (
         <SourceDialog key={dialog.editing?.id ?? "new"} open={dialog.open} onOpenChange={(o) => setDialog({ open: o, editing: o ? dialog.editing : null })} editing={dialog.editing} catalog={catalog.data} />

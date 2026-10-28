@@ -148,6 +148,22 @@ export type Source = {
   total_found: number;
 };
 
+export type Company = {
+  id: number;
+  platform: string;
+  slug: string;
+  name: string | null;
+  origin: "seed" | "discovered" | "imported";
+  enabled: boolean;
+  last_checked_at: string | null;
+  last_status: string | null;
+  last_error: string | null;
+  open_jobs: number;
+  jobs_found: number;
+};
+export type CompanyPage = { total: number; items: Company[]; tracked: number; turned_off: number; by_platform: Record<string, number>; checked: number; hiring: number; batch_size: number };
+export type CompanyImport = { added: number; already_tracked: number; invalid: string[]; invalid_count: number };
+
 export type SourceKind = {
   kind: string;
   label: string;
@@ -272,6 +288,7 @@ export type Settings = {
   follow_up_after_days: number;
   reply_body_analysis: boolean;
   auto_update: boolean;
+  directory_batch_size: number;
   gmail_address?: string | null;
   timezone: string;
 };

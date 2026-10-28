@@ -11,9 +11,9 @@ from sqlalchemy.orm import Session
 from huntly.context import AppContext
 from huntly.models import Job, JobRun, Source
 from huntly.security.vault import VaultLocked
-from huntly.services import store
+from huntly.services import companies, store
 from huntly.services.llm import LLMError
-from huntly.services.matching import blend, score_job
+from huntly.services.matching import blend, matches_profile, score_job
 from huntly.services.profile import load_profile, profile_corpus
 from huntly.services.sources.base import RawJob, SourceContext, SourceError
 from huntly.services.sources.registry import SOURCES
@@ -22,6 +22,7 @@ from huntly.security.ssrf import UnsafeURL, safe_get
 log = logging.getLogger(__name__)
 
 LLM_ASSESSMENTS_PER_RUN = 10
+DESCRIBE_PER_SOURCE = 40
 
 
 def _source_context(ctx: AppContext) -> SourceContext:
@@ -35,25 +36,53 @@ def _source_context(ctx: AppContext) -> SourceContext:
 
 
 def run_source(ctx: AppContext, s: Session, source: Source) -> tuple[int, int]:
+    sctx = _source_context(ctx)
+    if source.kind == companies.DIRECTORY_KIND:
+        return companies.run_directory(s, source, sctx, _store_job)
     impl = SOURCES.get(source.kind)
     if impl is None:
         raise SourceError(f"Unknown source kind {source.kind}")
-    raw_jobs = impl.fetch(source.config, _source_context(ctx))
+    raw_jobs = impl.fetch(source.config, sctx)
     profile = load_profile(s)
+    budget = [DESCRIBE_PER_SOURCE]
+
+    def describe(job: RawJob) -> None:
+        if budget[0] > 0:
+            budget[0] -= 1
+            impl.describe(job, sctx)
+
     new = 0
     for raw in raw_jobs:
-        if _store_job(s, source, raw.normalized(), profile):
+        if _store_job(s, source, raw.normalized(), profile, describe=describe if hasattr(impl, "describe") else None):
             new += 1
+    # A job link that points at a company's hiring board adds that company to the directory.
+    boards = [b for b in (companies.board_from_url(r.url or "") for r in raw_jobs) if b]
+    if boards:
+        companies.add_companies(s, boards, "discovered")
     return len(raw_jobs), new
 
 
-def _store_job(s: Session, source: Source, raw: RawJob, profile) -> bool:
+def _store_job(s: Session, source: Source, raw: RawJob, profile, *, relevant_only: bool = False, describe=None) -> bool:
+    """Score and store one job. ``relevant_only`` drops jobs that don't match the profile (broad sources)."""
     key = raw.dedupe_key()
     if s.scalar(select(Job.id).where(Job.dedupe_key == key)) is not None:
         return False
-    score, breakdown = score_job(
-        profile, title=raw.title, description=raw.description, location=raw.location, remote=bool(raw.remote), posted_at=raw.posted_at
-    )
+
+    def scored():
+        return score_job(profile, title=raw.title, description=raw.description, location=raw.location, remote=bool(raw.remote), posted_at=raw.posted_at)
+
+    if describe is not None and not raw.description:
+        # Fetching a description costs a request, so only do it for jobs whose title already fits.
+        if relevant_only and not matches_profile(scored()[1]):
+            return False
+        try:
+            describe(raw)
+            raw.normalized()
+        except Exception as exc:  # keep the job without its text
+            log.info("could not fetch a job description: %s", exc)
+    score, breakdown = scored()
+    if relevant_only and not matches_profile(breakdown):
+        return False
     breakdown["deterministic"] = score
     s.add(
         Job(
@@ -98,11 +127,42 @@ def assess_with_llm(ctx: AppContext, s: Session, jobs: list[Job]) -> int:
     return done
 
 
+DEFAULT_SOURCES = [
+    ("remotive", "Remotive", lambda role: {"search": role, "limit": 100}),
+    ("remoteok", "Remote OK", lambda role: {"search": role}),
+    ("himalayas", "Himalayas", lambda role: {"search": role}),
+    ("jobicy", "Jobicy", lambda role: {"tag": role, "count": 100}),
+    ("arbeitnow", "Arbeitnow (remote)", lambda role: {"remote_only": True}),
+    (companies.DIRECTORY_KIND, "Company directory", lambda role: {}),
+]
+
+
+def ensure_default_sources(s: Session) -> int:
+    """Once, after onboarding: add the remote job boards and the company directory, searching for the first target role."""
+    if store.get_setting(s, "default_sources_added") or not store.get_setting(s, "onboarding_complete"):
+        return 0
+    profile = load_profile(s)
+    role = profile.target_roles[0] if profile.target_roles else ""
+    have = set(s.scalars(select(Source.kind)))
+    added = 0
+    for kind, name, config in DEFAULT_SOURCES:
+        if kind in have:
+            continue
+        cfg = config(role) if kind == companies.DIRECTORY_KIND else SOURCES[kind].validate(config(role))
+        s.add(Source(kind=kind, name=name, config=cfg))
+        added += 1
+    store.set_setting(s, "default_sources_added", True)
+    if added:
+        store.audit(s, "system", "sources.defaults_added", "source", count=added, role=role)
+    return added
+
+
 def collect_all(ctx: AppContext, trigger: str = "schedule", source_ids: list[int] | None = None) -> dict:
     if not ctx.collect_lock.acquire(blocking=False):
         return {"status": "skipped", "reason": "collection already running"}
     try:
         with ctx.db.session() as s:
+            ensure_default_sources(s)
             run = JobRun(kind="collect", trigger=trigger)
             s.add(run)
             s.flush()

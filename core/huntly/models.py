@@ -191,3 +191,31 @@ class JobRun(Base):
     status: Mapped[str] = mapped_column(String(16), default="running")
     stats: Mapped[dict] = mapped_column(JSON, default=dict)
     error: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class Company(Base):
+    """A company's own job board in the directory (see services/companies.py)."""
+
+    __tablename__ = "companies"
+    __table_args__ = (UniqueConstraint("platform", "slug", name="uq_companies_board"),)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    platform: Mapped[str] = mapped_column(String(24))
+    slug: Mapped[str] = mapped_column(String(100))
+    name: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    origin: Mapped[str] = mapped_column(String(16), default="imported")  # seed | discovered | imported
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    last_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    last_status: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    open_jobs: Mapped[int] = mapped_column(Integer, default=0)
+    jobs_found: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class CompanyProbe(Base):
+    """A company name already looked up on the hiring platforms, so it is not looked up again."""
+
+    __tablename__ = "company_probes"
+    name_key: Mapped[str] = mapped_column(String(120), primary_key=True)
+    probed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    found: Mapped[bool] = mapped_column(Boolean, default=False)

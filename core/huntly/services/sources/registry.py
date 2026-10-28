@@ -7,8 +7,10 @@ from huntly.services.sources.boards import (
     HimalayasSource,
     JobicySource,
     LeverSource,
+    RecruiteeSource,
     RemoteOkSource,
     RemotiveSource,
+    SmartRecruitersSource,
 )
 from huntly.services.sources.career_page import CareerPageSource
 from huntly.services.sources.feeds import RssSource
@@ -20,6 +22,8 @@ SOURCES = {
         GreenhouseSource(),
         LeverSource(),
         AshbySource(),
+        SmartRecruitersSource(),
+        RecruiteeSource(),
         RemotiveSource(),
         RemoteOkSource(),
         HimalayasSource(),
@@ -37,6 +41,8 @@ CONFIG_FIELDS = {
     "greenhouse": [{"key": "board", "label": "Board token", "required": True, "placeholder": "e.g. stripe"}],
     "lever": [{"key": "company", "label": "Company slug", "required": True, "placeholder": "e.g. netflix"}],
     "ashby": [{"key": "board", "label": "Board name", "required": True, "placeholder": "e.g. ramp (from jobs.ashbyhq.com/ramp)"}],
+    "smartrecruiters": [{"key": "company", "label": "Company ID", "required": True, "placeholder": "e.g. vendease (from jobs.smartrecruiters.com/Vendease)"}],
+    "recruitee": [{"key": "company", "label": "Company", "required": True, "placeholder": "e.g. bunq (from bunq.recruitee.com)"}],
     "remotive": [{"key": "search", "label": "Search"}, {"key": "category", "label": "Category", "placeholder": "software-dev"}, {"key": "limit", "label": "Limit", "type": "number"}],
     "remoteok": [{"key": "search", "label": "Keywords (optional)", "placeholder": "e.g. python"}],
     "himalayas": [{"key": "search", "label": "Search (optional)", "placeholder": "e.g. backend engineer"}],
