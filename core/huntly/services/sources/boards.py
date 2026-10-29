@@ -25,6 +25,11 @@ from huntly.services.sources.career_page import job_postings
 _WORKPLACE = {"remote": True, "hybrid": False, "onsite": False, "on-site": False, "on_site": False}
 
 
+def _only(values) -> str | None:
+    """The single label in a list; several labels describe a range, so they decide nothing."""
+    return values[0] if isinstance(values, list) and len(values) == 1 else None
+
+
 def _slug(config: dict, key: str) -> str:
     value = str(config.get(key, "")).strip()
     if not SLUG.match(value):
@@ -229,6 +234,7 @@ class HimalayasSource:
                     remote=True,
                     posted_at=parse_dt(j.get("pubDate")),
                     external_id=f"himalayas:{j.get('guid')}",
+                    extra={"level": _only(j.get("seniority"))},
                 )
             )
         return jobs
@@ -264,6 +270,7 @@ class JobicySource:
                 remote=True,
                 posted_at=parse_dt(j.get("pubDate")),
                 external_id=f"jobicy:{j.get('id')}",
+                extra={"level": j.get("jobLevel")},
             )
             for j in resp.json().get("jobs", [])
         ]
@@ -332,7 +339,7 @@ class SmartRecruitersSource:
                     remote=False if loc.get("hybrid") else (bool(loc.get("remote")) or None),
                     posted_at=parse_dt(j.get("releasedDate")),
                     external_id=f"smartrecruiters:{company}:{job_id}",
-                    extra={"company": company, "id": job_id},
+                    extra={"company": company, "id": job_id, "level": (j.get("experienceLevel") or {}).get("id")},
                 )
             )
         return jobs
@@ -413,6 +420,7 @@ class WorkableSource:
                 remote=True if j.get("telecommuting") else None,
                 posted_at=parse_dt(j.get("published_on") or j.get("created_at")),
                 external_id=f"workable:{company}:{j.get('shortcode')}",
+                extra={"level": j.get("experience")},
             )
             for j in (data.get("jobs") or [])[:500]
         ]

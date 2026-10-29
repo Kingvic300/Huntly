@@ -31,6 +31,7 @@ def list_jobs(
     min_score: float = 0,
     source_id: int | None = None,
     remote: bool | None = None,
+    seniority: str | None = None,
     sort: Literal["score", "recent", "posted"] = "score",
     limit: int = 50,
     offset: int = 0,
@@ -46,6 +47,8 @@ def list_jobs(
         stmt = stmt.where(Job.source_id == source_id)
     if remote is not None:
         stmt = stmt.where(Job.remote.is_(remote))
+    if seniority:
+        stmt = stmt.where(Job.seniority.in_(seniority.split(",")))
     order = {"score": Job.score.desc(), "recent": Job.discovered_at.desc(), "posted": Job.posted_at.desc()}[sort]
     with ctx.db.session() as s:
         total = s.scalar(select(func.count()).select_from(stmt.subquery()))

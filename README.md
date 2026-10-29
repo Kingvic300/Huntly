@@ -37,7 +37,7 @@ Licensed under [Apache-2.0](LICENSE).
 | Screen | What it does |
 | --- | --- |
 | **Today** | A one-line briefing, your pipeline at a glance, strongest leads, and a "Needs you" list (emails to approve, follow-ups due, failing sources, profile gaps). |
-| **Discover** | Keyboard triage (<kbd>J</kbd>/<kbd>K</kbd> move, <kbd>S</kbd> shortlist, <kbd>D</kbd> dismiss, <kbd>A</kbd> apply, <kbd>O</kbd> open). Every job shows a heat meter and an explainable score breakdown. **Tailor for this job** starts the application and makes the CV and cover letter in one click. Prompt-injection attempts in postings are flagged. |
+| **Discover** | Keyboard triage (<kbd>J</kbd>/<kbd>K</kbd> move, <kbd>S</kbd> shortlist, <kbd>D</kbd> dismiss, <kbd>A</kbd> apply, <kbd>O</kbd> open). Every job shows a match ring and an explainable score breakdown. Filter by remote (hybrid jobs never count as remote) and by seniority level, worked out from the title, the employer's own label, then the description (for example "5+ years of experience"). **Tailor for this job** starts the application and makes the CV and cover letter in one click. Prompt-injection attempts in postings are flagged. |
 | **Applications** | A board by stage. Each application walks you through making an ATS-friendly CV and cover letter, writing the email, and approving it, with an ATS readiness report and notes. |
 | **Approvals** | The email exactly as the recipient will see it, a checklist you tick before approving, time-limited approval, Gmail drafts, reply status and follow-ups. |
 | **Profile** | Import your existing CV (PDF/Word, parsed locally), then edit every section: contact details including LinkedIn, GitHub and website, experience, education, projects and preferences. Plus your file library. |

@@ -11,6 +11,7 @@ def job_out(j: Job, full: bool = False) -> dict:
         "company": j.company,
         "location": j.location,
         "remote": j.remote,
+        "seniority": j.seniority,
         "url": j.url,
         "apply_email": j.apply_email,
         "posted_at": iso(j.posted_at),

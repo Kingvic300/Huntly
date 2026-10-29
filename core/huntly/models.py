@@ -76,6 +76,7 @@ class Job(Base):
     company: Mapped[str | None] = mapped_column(String(200), nullable=True)
     location: Mapped[str | None] = mapped_column(String(200), nullable=True)
     remote: Mapped[bool] = mapped_column(Boolean, default=False)
+    seniority: Mapped[str | None] = mapped_column(String(16), nullable=True, index=True)  # matching.LEVELS
     url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
     apply_email: Mapped[str | None] = mapped_column(String(320), nullable=True)
     description: Mapped[str] = mapped_column(Text, default="")

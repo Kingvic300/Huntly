@@ -14,6 +14,7 @@ from typing import Callable, Protocol
 
 from huntly.security.sanitize import clean_text, html_to_text, looks_like_injection
 from huntly.security.ssrf import FetchResult, safe_get
+from huntly.services.matching import seniority_level
 
 SLUG = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,99}$")
 EMAIL = re.compile(r"(?i)\b(?:mailto:)?([a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})\b")
@@ -51,7 +52,8 @@ class RawJob:
     posted_at: datetime | None = None
     external_id: str | None = None
     apply_email: str | None = None
-    extra: dict = field(default_factory=dict)
+    seniority: str | None = None
+    extra: dict = field(default_factory=dict)  # "level": the platform's own seniority label, when it has one
 
     def normalized(self) -> "RawJob":
         self.title = clean_text(self.title, 300) or "Untitled role"
@@ -62,6 +64,7 @@ class RawJob:
             self.remote = False  # even when the board files it under remote
         elif self.remote is None:
             self.remote = bool(REMOTE_HINT.search(f"{self.title} {self.location or ''} {self.description[:2000]}"))
+        self.seniority = seniority_level(self.title, self.description, self.extra.get("level"))
         if not self.apply_email:
             m = EMAIL.search(self.description)
             if m and not m.group(1).lower().startswith(("noreply", "no-reply")):

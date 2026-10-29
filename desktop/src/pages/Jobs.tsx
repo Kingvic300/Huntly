@@ -6,7 +6,7 @@ import { JobRow } from "@/components/JobRow";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/input";
 import { Badge, EmptyState, ErrorState, MatchRing, Segmented, Skeleton } from "@/components/ui/misc";
-import { api, type Application, type Job } from "@/lib/api";
+import { api, LEVEL_LABEL, type Application, type Job, type Level } from "@/lib/api";
 import { announceDocuments, type Generated } from "@/pages/Applications";
 import { openUrl } from "@/lib/platform";
 import { qk, useAction, useJob, useJobs, useSources } from "@/lib/queries";
@@ -114,7 +114,10 @@ function JobDetail({ id }: { id: number }) {
             <EyeOff /> Not for me
           </Button>
         )}
-        <Badge className="ml-auto">{j.status === "saved" ? "Shortlisted" : titleCase(j.status)}</Badge>
+        <span className="ml-auto flex items-center gap-1.5">
+          {j.seniority ? <Badge tone="act">{LEVEL_LABEL[j.seniority]}</Badge> : null}
+          <Badge>{j.status === "saved" ? "Shortlisted" : titleCase(j.status)}</Badge>
+        </span>
       </div>
 
       {j.flagged_injection ? (
@@ -186,6 +189,7 @@ export default function Jobs() {
   const [status, setStatus] = useState<StatusFilter>((params.get("status") as StatusFilter) ?? "new,saved");
   const [minScore, setMinScore] = useState(0);
   const [remote, setRemote] = useState<"" | "true" | "false">("");
+  const [level, setLevel] = useState<"" | Level>("");
   const [sort, setSort] = useState<"score" | "recent" | "posted">("score");
   const [sourceId, setSourceId] = useState("");
   const [limit, setLimit] = useState(60);
@@ -202,7 +206,7 @@ export default function Jobs() {
     return () => clearTimeout(t);
   }, [q]);
 
-  const jobs = useJobs({ q: debounced, status, min_score: minScore, remote: remote || undefined, sort, source_id: sourceId || undefined, limit });
+  const jobs = useJobs({ q: debounced, status, min_score: minScore, remote: remote || undefined, seniority: level || undefined, sort, source_id: sourceId || undefined, limit });
   const items = jobs.data?.items ?? [];
   const select = useCallback((id: number) => setParams((p) => ({ ...Object.fromEntries(p), id: String(id) })), [setParams]);
   const { setStatus: setJobStatus, apply } = useJobActions(selected ?? 0);
@@ -275,6 +279,14 @@ export default function Jobs() {
           <option value="">Anywhere</option>
           <option value="true">Remote</option>
           <option value="false">On-site or hybrid</option>
+        </Select>
+        <Select value={level} onChange={(e) => setLevel(e.target.value as typeof level)} className="w-[150px] shrink-0" aria-label="Seniority level">
+          <option value="">Any level</option>
+          {(Object.keys(LEVEL_LABEL) as Level[]).map((l) => (
+            <option key={l} value={l}>
+              {LEVEL_LABEL[l]}
+            </option>
+          ))}
         </Select>
         <Select value={sourceId} onChange={(e) => setSourceId(e.target.value)} className="w-[136px] shrink-0" aria-label="Source">
           <option value="">All sources</option>

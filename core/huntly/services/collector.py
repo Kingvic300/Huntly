@@ -13,7 +13,7 @@ from huntly.models import Job, JobRun, Source
 from huntly.security.vault import VaultLocked
 from huntly.services import companies, store
 from huntly.services.llm import LLMError
-from huntly.services.matching import blend, matches_profile, score_job
+from huntly.services.matching import blend, matches_profile, score_job, seniority_level
 from huntly.services.profile import load_profile, profile_corpus
 from huntly.services.sources.base import RawJob, SourceContext, SourceError
 from huntly.services.sources.registry import SOURCES
@@ -70,7 +70,9 @@ def _store_job(s: Session, source: Source, raw: RawJob, profile, *, relevant_onl
         return False
 
     def scored():
-        return score_job(profile, title=raw.title, description=raw.description, location=raw.location, remote=bool(raw.remote), posted_at=raw.posted_at)
+        return score_job(
+            profile, title=raw.title, description=raw.description, location=raw.location, remote=bool(raw.remote), posted_at=raw.posted_at, level=raw.seniority
+        )
 
     if describe is not None and not raw.description:
         # Fetching a description costs a request, so only do it for jobs whose title already fits.
@@ -94,6 +96,7 @@ def _store_job(s: Session, source: Source, raw: RawJob, profile, *, relevant_onl
             company=raw.company,
             location=raw.location,
             remote=bool(raw.remote),
+            seniority=raw.seniority,
             url=raw.url[:2048] if raw.url else None,
             apply_email=raw.apply_email,
             description=raw.description,
@@ -232,8 +235,10 @@ def rescore_all(ctx: AppContext) -> int:
         profile = load_profile(s)
         n = 0
         for job in s.scalars(select(Job)):
+            job.seniority = job.seniority or seniority_level(job.title, job.description or "")
             score, breakdown = score_job(
-                profile, title=job.title, description=job.description, location=job.location, remote=job.remote, posted_at=job.posted_at
+                profile, title=job.title, description=job.description, location=job.location, remote=job.remote, posted_at=job.posted_at,
+                level=job.seniority,
             )
             breakdown["deterministic"] = score
             llm = (job.score_breakdown or {}).get("llm")

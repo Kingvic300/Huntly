@@ -102,12 +102,23 @@ export type OnboardingStatus = {
   data_dir: string;
 };
 
+export type Level = "intern" | "entry" | "mid" | "senior" | "lead" | "manager";
+export const LEVEL_LABEL: Record<Level, string> = {
+  intern: "Internship",
+  entry: "Entry level",
+  mid: "Mid level",
+  senior: "Senior",
+  lead: "Lead / Staff",
+  manager: "Manager / Director",
+};
+
 export type Job = {
   id: number;
   title: string;
   company: string | null;
   location: string | null;
   remote: boolean;
+  seniority: Level | null;
   url: string | null;
   apply_email: string | null;
   posted_at: string | null;

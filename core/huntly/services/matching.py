@@ -11,11 +11,84 @@ from datetime import datetime, timezone
 
 from huntly.services.profile import ProfileData
 
-SENIORITY_WORDS = {
-    "intern": "intern", "internship": "intern", "graduate": "junior", "junior": "junior", "entry": "junior",
-    "mid": "mid", "intermediate": "mid", "senior": "senior", "sr": "senior", "lead": "lead",
-    "staff": "staff", "principal": "principal", "head": "head", "director": "director",
+# --- seniority ---------------------------------------------------------------
+LEVELS = ("intern", "entry", "mid", "senior", "lead", "manager")
+LEVEL_LABELS = {
+    "intern": "Internship", "entry": "Entry level", "mid": "Mid level", "senior": "Senior",
+    "lead": "Lead / Staff", "manager": "Manager / Director",
 }
+_TECH_ROLE = (
+    r"(?:software|data|machine|ml|ai|product|security|backend|back-end|frontend|front-end|full[- ]?stack|platform|"
+    r"infrastructure|site|research|applied|mobile|ios|android|devops|cloud|analytics|engineer|scientist|designer|"
+    r"developer|architect|design|hardware|systems|solutions|firmware|network|qa|test|quality)"
+)
+# Checked in order on the title; the first match wins. "Senior Director" is a manager role,
+# "Staff Accountant" is not a staff-level engineer, and "Lead Generation" is not a lead role.
+_TITLE_LEVELS = [
+    ("intern", re.compile(r"\b(?:intern|internship|trainee|apprentice(?:ship)?)\b")),
+    ("manager", re.compile(
+        r"\b(?:head\s+of|director|vp|vice\s+president|chief|c[tefmo]o|engineering\s+manager|general\s+manager|"
+        r"country\s+manager|managing\s+director|people\s+manager)\b")),
+    ("lead", re.compile(rf"\b(?:principal|distinguished|tech\s+lead|team\s+lead|lead(?![\s-]+gen)|staff\s+{_TECH_ROLE})\b")),
+    ("senior", re.compile(r"\b(?:senior|sr\.?)(?=\s|$|[,/(-])")),
+    ("mid", re.compile(r"\b(?:mid[- ]?level|intermediate|mid(?![- ]?market))\b")),
+    ("entry", re.compile(r"\b(?:junior|jr\.?|graduate|entry[- ]level|associate)(?=\s|$|[,/(-])")),
+]
+_ROMAN = re.compile(r"\b(i{1,3}|iv|v)\s*(?:$|[-–,(|/])")
+_ROMAN_LEVEL = {"i": "entry", "ii": "mid", "iii": "senior", "iv": "lead", "v": "lead"}
+# A platform's own label: Workable "Mid-Senior level", SmartRecruiters "entry_level", Jobicy "Midweight".
+_HINT_WORDS = {"executive": "manager", "director": "manager", "midweight": "mid", "mid_level": "mid", "entry_level": "entry", "internship": "intern"}
+_YEARS = re.compile(
+    r"(?i)\b(\d{1,2})\s*(?:\+|plus)?\s*(?:(?:-|–|to)\s*\d{1,2}\s*)?\+?\s*(?:years?|yrs?)\b.{0,60}?\bexperience"
+    r"|\bexperience\b\W{0,3}(?:of\s+)?(?:at\s+least\s+|minimum\s+(?:of\s+)?)?(\d{1,2})\s*\+?\s*(?:years?|yrs?)\b"
+)
+_TEXT_LEVELS = [
+    ("intern", re.compile(r"(?i)\bthis\s+is\s+an?\s+(?:paid\s+|unpaid\s+)?internship\b|\binternship\s+(?:role|position|opportunity)\b")),
+    ("entry", re.compile(r"(?i)\bentry[- ]level\b|\bjunior[- ](?:level|role|position)\b|\bno\s+(?:prior\s+)?experience\s+(?:is\s+)?required\b")),
+    ("mid", re.compile(r"(?i)\bmid[- ]level\b")),
+    ("senior", re.compile(r"(?i)\bsenior[- ]level\b")),
+]
+
+
+def _title_level(title: str) -> str | None:
+    t = title.lower()
+    for level, pattern in _TITLE_LEVELS:
+        if pattern.search(t):
+            return level
+    m = _ROMAN.search(t)
+    return _ROMAN_LEVEL[m.group(1)] if m else None
+
+
+def level_from_label(label: str | None) -> str | None:
+    """A level from a short label: a platform's field or a profile preference ("Senior", "Mid-level")."""
+    if not label:
+        return None
+    key = label.strip().lower().replace(" ", "_")
+    if "mid" in key and "senior" in key:
+        return None  # LinkedIn-style "Mid-Senior level" covers two levels
+    return _HINT_WORDS.get(key) or (key if key in LEVELS else None) or _title_level(label)
+
+
+def years_required(text: str) -> int | None:
+    """The most years of experience the text asks for (typos like 50 years are ignored)."""
+    found = [int(a or b) for a, b in _YEARS.findall(text[:6000])]
+    found = [n for n in found if n <= 20]
+    return max(found) if found else None
+
+
+def seniority_level(title: str, description: str = "", hint: str | None = None) -> str | None:
+    """Seniority of a job: the title first, then the employer's own label, then the description."""
+    level = _title_level(title) or level_from_label(hint)
+    if level:
+        return level
+    years = years_required(description)
+    if years is not None:
+        return "entry" if years <= 1 else "mid" if years <= 4 else "senior" if years <= 7 else "lead"
+    for level, pattern in _TEXT_LEVELS:
+        if pattern.search(description[:6000]):
+            return level
+    return None
+
 
 WEIGHTS = {"skills": 45, "title": 25, "location": 15, "recency": 10, "seniority": 5}
 
@@ -38,6 +111,7 @@ def score_job(
     remote: bool,
     posted_at: datetime | None,
     now: datetime | None = None,
+    level: str | None = None,
 ) -> tuple[float, dict]:
     now = now or datetime.now(timezone.utc)
     text = f"{title}\n{description}".lower()
@@ -91,17 +165,17 @@ def score_job(
     else:
         parts["recency"] = WEIGHTS["recency"] * 0.5
 
-    # Seniority
-    job_levels = {lvl for w, lvl in SENIORITY_WORDS.items() if _term_regex(w).search(title_l)}
-    wanted = {SENIORITY_WORDS.get(s.lower(), s.lower()) for s in profile.seniority}
-    if not wanted or not job_levels:
+    # Seniority (title, then the employer's label, then the description)
+    job_level = level or seniority_level(title, description)
+    wanted = {lvl for lvl in (level_from_label(s) for s in profile.seniority) if lvl}
+    if not wanted or not job_level:
         parts["seniority"] = WEIGHTS["seniority"] * 0.5
-    elif job_levels & wanted:
+    elif job_level in wanted:
         parts["seniority"] = WEIGHTS["seniority"]
-        reasons.append("Seniority matches your preference")
+        reasons.append(f"{LEVEL_LABELS[job_level]}, matching your preference")
     else:
         parts["seniority"] = 0.0
-        reasons.append(f"Seniority ({', '.join(sorted(job_levels))}) differs from your preference")
+        reasons.append(f"{LEVEL_LABELS[job_level]}, not a level you prefer")
 
     total = sum(parts.values())
 

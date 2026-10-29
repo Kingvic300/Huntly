@@ -128,6 +128,19 @@ def test_collect_dedupes_scores_and_flags(with_profile, fake_fetch):
         assert s.query(store.Notification).count() >= 1
 
 
+def _old_schema_job(s, dedupe_key: str, title: str, remote: bool = False, description: str = "", source_id=None) -> None:
+    """Insert a job with plain SQL, for tests that step the schema back to an older version."""
+    from sqlalchemy import text
+
+    s.execute(
+        text(
+            "INSERT INTO jobs (dedupe_key, title, remote, description, discovered_at, score, score_breakdown, flagged_injection, status, source_id)"
+            " VALUES (:k, :t, :r, :d, CURRENT_TIMESTAMP, 0, '{}', 0, 'new', :src)"
+        ),
+        {"k": dedupe_key, "t": title, "r": remote, "d": description, "src": source_id},
+    )
+
+
 def test_migration_removes_x_sources_but_keeps_their_jobs(ctx):
     from alembic import command
     from alembic.config import Config
@@ -144,7 +157,7 @@ def test_migration_removes_x_sources_but_keeps_their_jobs(ctx):
         keep = Source(kind="remotive", name="Remotive", config={})
         s.add_all([x, keep, Secret(name="x_bearer_token", nonce=b"n", ciphertext=b"c")])
         s.flush()
-        s.add(Job(dedupe_key="x1", title="Found on X", source_id=x.id))
+        _old_schema_job(s, "x1", "Found on X", source_id=x.id)
     command.upgrade(cfg, "head")
     with ctx.db.session() as s:
         assert [src.kind for src in s.query(Source).all()] == ["remotive"]
@@ -194,8 +207,80 @@ def test_migration_marks_saved_hybrid_jobs_not_remote(ctx):
     cfg.attributes["engine"] = ctx.db.engine
     command.downgrade(cfg, "0006")
     with ctx.db.session() as s:
-        s.add(Job(dedupe_key="h1", title="Engineer (Hybrid)", remote=True))
-        s.add(Job(dedupe_key="r1", title="Engineer", remote=True, description="Fully remote"))
+        _old_schema_job(s, "h1", "Engineer (Hybrid)", remote=True)
+        _old_schema_job(s, "r1", "Engineer", remote=True, description="Fully remote")
     command.upgrade(cfg, "head")
     with ctx.db.session() as s:
         assert {j.dedupe_key: j.remote for j in s.query(Job).all()} == {"h1": False, "r1": True}
+
+
+def test_seniority_from_title_then_label_then_description():
+    from huntly.services.matching import seniority_level as level
+
+    assert level("Senior Backend Engineer") == "senior"
+    assert level("Staff Software Engineer") == "lead" and level("Staff Accountant") is None
+    assert level("Lead Generation Specialist") is None and level("Tech Lead, Payments") == "lead"
+    assert level("Senior Director, Sales") == "manager" and level("Engineering Manager") == "manager"
+    assert level("Software Engineer II") == "mid" and level("Software Engineer I") == "entry"
+    assert level("Associate Product Manager") == "entry" and level("Summer Intern") == "intern"
+    assert level("Mid-Market Account Executive") is None
+    assert level("Staff Design Engineer") == "lead" and level("Order Entry Technician") is None
+    assert level("Support Specialist", "We also run an internship programme each summer.") is None
+    assert level("Software Engineer", "This is a paid internship for students.") == "intern"
+    # The description decides when the title doesn't; "mentor junior engineers" is not a level.
+    assert level("Backend Engineer", "3+ years of professional experience with Python. Mentor junior engineers.") == "mid"
+    assert level("Backend Engineer", "Minimum of 8 years experience") == "lead"
+    assert level("Developer", "Experience: at least 2 years") == "mid"
+    assert level("Data Analyst", "This is an entry-level role") == "entry"
+    assert level("Data Analyst", "You will work with senior leaders.") is None
+    # The employer's own label beats the description, and the title beats both.
+    assert level("Developer", "10+ years of experience", "Entry level") == "entry"
+    assert level("Senior Developer", "", "Entry level") == "senior"
+    assert level("Developer", "", "Mid-Senior level") is None  # a range, not a level
+
+
+def test_platform_levels_and_filter(client, ctx, fake_fetch):
+    fake_fetch.routes["https://jobicy.com/api/v2/remote-jobs"] = (200, {"jobs": [
+        {"id": 1, "url": "https://jobicy.com/jobs/1", "jobTitle": "Developer", "jobLevel": "Midweight", "jobDescription": "Python"},
+    ]})
+    fake_fetch.routes["https://www.workable.com/api/accounts/kuda"] = (200, {"name": "Kuda", "jobs": [
+        {"title": "Analyst", "shortcode": "A", "url": "https://apply.workable.com/j/A", "experience": "Entry level", "description": "SQL"},
+    ]})
+    sctx = _ctx(fake_fetch)
+    assert SOURCES["jobicy"].fetch(SOURCES["jobicy"].validate({}), sctx)[0].normalized().seniority == "mid"
+    assert SOURCES["workable"].fetch({"company": "kuda"}, sctx)[0].normalized().seniority == "entry"
+
+    with ctx.db.session() as s:
+        s.add(Job(dedupe_key="a", title="Senior Engineer", seniority="senior"))
+        s.add(Job(dedupe_key="b", title="Junior Engineer", seniority="entry"))
+        s.add(Job(dedupe_key="c", title="Engineer"))
+    with client:
+        page = client.get("/api/jobs", params={"seniority": "senior,lead"}).json()
+        assert [j["title"] for j in page["items"]] == ["Senior Engineer"] and page["items"][0]["seniority"] == "senior"
+        assert client.get("/api/jobs").json()["total"] == 3
+
+
+def test_seniority_preference_in_score():
+    p = SAMPLE_PROFILE.model_copy(update={"seniority": ["Senior"]})
+    _, match = score_job(p, title="Backend Engineer", description="5+ years of experience", location=None, remote=True, posted_at=None)
+    _, other = score_job(p, title="Junior Backend Engineer", description="", location=None, remote=True, posted_at=None)
+    assert match["parts"]["seniority"] == 5 and "Senior, matching your preference" in match["reasons"]
+    assert other["parts"]["seniority"] == 0 and "Entry level, not a level you prefer" in other["reasons"]
+
+
+def test_migration_gives_saved_jobs_a_level(ctx):
+    from alembic import command
+    from alembic.config import Config
+
+    from huntly.config import resource_path
+
+    cfg = Config()
+    cfg.set_main_option("script_location", str(resource_path("migrations")))
+    cfg.attributes["engine"] = ctx.db.engine
+    command.downgrade(cfg, "0007")
+    with ctx.db.session() as s:
+        _old_schema_job(s, "s1", "Engineer", description="We need 6+ years of experience")
+        _old_schema_job(s, "s2", "Engineer")
+    command.upgrade(cfg, "head")
+    with ctx.db.session() as s:
+        assert {j.dedupe_key: j.seniority for j in s.query(Job).all()} == {"s1": "senior", "s2": None}

@@ -1,5 +1,5 @@
 import { ShieldAlert } from "lucide-react";
-import type { Job } from "@/lib/api";
+import { LEVEL_LABEL, type Job } from "@/lib/api";
 import { cn, relativeTime } from "@/lib/utils";
 import { MatchRing, Tooltip } from "./ui/misc";
 
@@ -33,6 +33,7 @@ export function JobRow({ job, active, onClick, compact }: { job: Job; active?: b
         <span className="mt-0.5 flex gap-3 text-[12.5px] text-muted">
           <span className="max-w-[55%] shrink-0 truncate">{job.company ?? "Company not listed"}</span>
           {where ? <span className={cn("min-w-0 truncate", job.remote ? "text-act/90" : "text-faint")}>{where}</span> : null}
+          {job.seniority ? <span className="shrink-0 text-faint">{LEVEL_LABEL[job.seniority]}</span> : null}
         </span>
       </span>
       {!compact ? <span className="shrink-0 text-right text-[12px] text-faint">{relativeTime(job.posted_at ?? job.discovered_at)}</span> : null}

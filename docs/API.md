@@ -31,7 +31,7 @@ Status codes: `401` bad token · `403` non-loopback host · `423` vault locked �
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| GET | `/jobs` | `q, status, min_score, source_id, remote, sort, limit, offset` |
+| GET | `/jobs` | `q, status, min_score, source_id, remote, seniority (comma list of intern, entry, mid, senior, lead, manager), sort, limit, offset` |
 | GET/PATCH | `/jobs/{id}` | Detail with score breakdown / `{status}` |
 | POST | `/jobs/rescore` | Re-score all jobs |
 | GET | `/sources/catalog` | Source types and their config fields |
