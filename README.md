@@ -146,6 +146,14 @@ Applications. The app is not code-signed yet, so the first time, right-click it 
 **Windows**: run `Huntly_0.3.4_x64-setup.exe`. It is not code-signed yet, so SmartScreen may
 warn you: choose **More info → Run anyway**.
 
+### Releasing a new version
+
+Version numbers are set automatically. Either run `python scripts/release.py patch --push`
+(or `minor`, `major`, or an exact version such as `0.5.0`), or open **Actions → Cut release →
+Run workflow** on GitHub. Both write the new version everywhere it appears, commit, tag and push,
+and GitHub then builds the installers, publishes the release, and updates the package
+repositories, the Homebrew cask and the Scoop manifest.
+
 ### Build from source
 
 Requirements: Python ≥ 3.11, Node.js ≥ 20, Rust ≥ 1.77 and the Tauri system libraries:
