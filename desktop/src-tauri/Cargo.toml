@@ -1,6 +1,6 @@
 [package]
 name = "huntly"
-version = "0.3.4"
+version = "0.3.5"
 description = "Huntly — open-source local desktop job-hunting assistant"
 authors = ["Huntly contributors"]
 license = "Apache-2.0"
