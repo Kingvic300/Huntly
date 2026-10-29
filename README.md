@@ -25,7 +25,7 @@ Licensed under [Apache-2.0](LICENSE).
 ## Contents
 
 - [Features](#features)
-- [Install (Linux / Kali)](#install-linux--kali)
+- [Install](#install)
 - [First run](#first-run)
 - [Credentials you may need](#credentials-you-may-need)
 - [Job sources](#job-sources)
@@ -82,7 +82,47 @@ pre-load images) and hurts deliverability. Instead:
   suggests a short follow-up in the same thread. It goes through the same approval gate as
   every other email. At most two follow-ups per application.
 
-## Install (Linux / Kali)
+## Install
+
+### With your package manager (recommended)
+
+Install once with one command; after that Huntly updates like any other package.
+
+**Linux**: Debian, Ubuntu, Kali, Fedora, RHEL, openSUSE, or any other distribution:
+
+```bash
+curl -fsSL https://kingvic300.github.io/Huntly/install.sh | sudo sh
+```
+
+On apt, dnf, yum and zypper systems this adds Huntly's signed package repository, so afterwards
+`sudo apt install huntly` (or `dnf`/`zypper install huntly`) installs the latest version and
+`sudo apt upgrade` (or `dnf upgrade` / `zypper update`) keeps it current. On other
+distributions it installs the AppImage to `/opt/huntly`, which updates itself. Prefer to add the
+repository by hand on Debian, Ubuntu or Kali?
+
+```bash
+sudo curl -fsSL https://kingvic300.github.io/Huntly/huntly.gpg -o /usr/share/keyrings/huntly.gpg
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/huntly.gpg] https://kingvic300.github.io/Huntly/apt stable main" | sudo tee /etc/apt/sources.list.d/huntly.list
+sudo apt update && sudo apt install huntly
+```
+
+**macOS** ([Homebrew](https://brew.sh)): this repository is also a Homebrew tap.
+
+```bash
+brew tap kingvic300/huntly https://github.com/Kingvic300/Huntly
+brew install --cask huntly
+```
+
+**Windows** ([Scoop](https://scoop.sh)): this repository is also a Scoop bucket.
+
+```powershell
+scoop bucket add huntly https://github.com/Kingvic300/Huntly
+scoop install huntly
+```
+
+Every release updates the repositories (`scripts/build_linux_repos.sh`, run by the Pages
+workflow, signed with the `APT_SIGNING_KEY` secret) and the cask and Scoop manifests
+(`scripts/package_manifests.py`).
 
 ### From a release package
 

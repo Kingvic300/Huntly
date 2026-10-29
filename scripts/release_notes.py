@@ -36,6 +36,12 @@ def main(tag: str) -> None:
         "",
         "Easiest: use the [download page](https://kingvic300.github.io/Huntly/), which picks the right file for your computer.",
         "",
+        "**With a package manager** (updates arrive with the rest of your system):",
+        "",
+        "- Linux, any distribution: `curl -fsSL https://kingvic300.github.io/Huntly/install.sh | sudo sh`, then `sudo apt install huntly` / `dnf install huntly` installs and upgrades it",
+        "- macOS: `brew tap kingvic300/huntly https://github.com/Kingvic300/Huntly && brew install --cask huntly`",
+        "- Windows: `scoop bucket add huntly https://github.com/Kingvic300/Huntly; scoop install huntly`",
+        "",
         "| System | For | File | How to install |",
         "| --- | --- | --- | --- |",
     ]

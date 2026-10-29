@@ -1,0 +1,27 @@
+{
+    "version": "0.3.4",
+    "description": "Private, local job-hunting assistant",
+    "homepage": "https://kingvic300.github.io/Huntly/",
+    "license": "Apache-2.0",
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/Kingvic300/Huntly/releases/download/v0.3.4/Huntly_0.3.4_x64-setup.exe#/dl.7z",
+            "hash": "27513fcb2b56ea2bba5a9218311abf5f66625b497039da55df4d1b3760a75c9b"
+        }
+    },
+    "pre_install": "Remove-Item \"$dir\\$PLUGINSDIR\", \"$dir\\uninstall.exe\" -Recurse -Force -ErrorAction SilentlyContinue",
+    "shortcuts": [
+        [
+            "huntly.exe",
+            "Huntly"
+        ]
+    ],
+    "checkver": "github",
+    "autoupdate": {
+        "architecture": {
+            "64bit": {
+                "url": "https://github.com/Kingvic300/Huntly/releases/download/v$version/Huntly_$version_x64-setup.exe#/dl.7z"
+            }
+        }
+    }
+}
