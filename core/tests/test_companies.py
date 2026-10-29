@@ -187,3 +187,35 @@ def test_workable_bamboohr_breezy(with_profile, fake_fetch):
     assert chow.company == "Chowdeck" and chow.remote is False and "Docker" in chow.description  # hybrid, text fetched
     assert jobs["Python Developer"].remote is True and "FastAPI" in jobs["Python Developer"].description
     assert "https://chowdeck.bamboohr.com/careers/35/detail" not in [u for u, *_ in fake_fetch.calls]
+
+
+def test_search_never_holds_the_write_lock_while_on_the_network(with_profile, fake_fetch):
+    """The app must stay able to save (start an application, shortlist) during a long search."""
+    import sqlite3
+
+    ctx = with_profile
+    fake_fetch.routes[GH + "acme/jobs"] = (200, {"jobs": [
+        {"id": 1, "title": "Backend Engineer", "absolute_url": "https://boards.greenhouse.io/acme/jobs/1", "content": "Python and FastAPI"},
+    ]})
+    fake_fetch.routes[SR + "vend/postings"] = (200, {"totalFound": 1, "content": [{"id": "123", "name": "Python Developer"}]})
+    fake_fetch.routes[SR + "vend/postings/123"] = (200, {"jobAd": {"sections": {"d": {"title": "About", "text": "Python, Docker"}}}})
+    dir_id = _directory(ctx, ("greenhouse", "acme"), ("smartrecruiters", "vend"))
+    with ctx.db.session() as s:
+        s.add(Job(dedupe_key="other", title="Engineer", company="Acme Corp"))  # gives discovery a name to look up
+    blocked = []
+
+    def fetch_while_user_saves(url, **kw):
+        conn = sqlite3.connect(ctx.paths.db, timeout=0.5)
+        try:
+            conn.execute("UPDATE settings SET value = value WHERE key = 'x'")
+            conn.commit()
+        except sqlite3.OperationalError as exc:
+            blocked.append((url, str(exc)))
+        finally:
+            conn.close()
+        return fake_fetch(url, **kw)
+
+    ctx.fetch = fetch_while_user_saves
+    out = collect_all(ctx, "manual", source_ids=[dir_id])
+    assert out["new"] == 2
+    assert blocked == []

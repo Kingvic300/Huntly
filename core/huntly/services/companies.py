@@ -176,12 +176,18 @@ StoreJob = Callable[..., bool]
 
 
 def run_directory(s: Session, source: Source, sctx: SourceContext, store_job: StoreJob) -> tuple[int, int]:
-    """One collection pass: discover new companies, then check the next batch of boards."""
+    """One collection pass: discover new companies, then check the next batch of boards.
+
+    Writes are committed in small steps and never held open across network calls, so the
+    rest of the app can save while a long directory run is fetching boards.
+    """
     load_seed(s)
     profile = load_profile(s)
+    s.commit()
     if not (profile.target_roles or profile.skills):
         raise SourceError("Add target roles or skills to your profile first. The directory keeps only jobs that match them.")
     discover(s, source, sctx)
+    s.commit()
     batch = int(store.get_setting(s, "directory_batch_size") or 300)
     companies = list(
         s.scalars(
@@ -227,6 +233,7 @@ def run_directory(s: Session, source: Source, sctx: SourceContext, store_job: St
             c.last_status, c.last_error = "error", f"{type(exc).__name__}: {exc}"[:300]
             if isinstance(exc, SourceError) and "HTTP 404" in str(exc):
                 c.enabled = False  # the board no longer exists
+            s.commit()
             continue
         c.last_status, c.last_error, c.open_jobs = "ok", None, len(jobs)
         c.name = c.name or (jobs[0].company if jobs else None)
@@ -235,9 +242,15 @@ def run_directory(s: Session, source: Source, sctx: SourceContext, store_job: St
             if c.name and (job.company or "").lower() == c.slug:
                 job.company = c.name
         describe = describer(c.platform)
-        added = sum(store_job(s, source, job.normalized(), profile, relevant_only=True, describe=describe) for job in jobs)
+        s.commit()
+        added = 0
+        for job in jobs:
+            if store_job(s, source, job.normalized(), profile, relevant_only=True, describe=describe):
+                added += 1
+                s.commit()
         c.jobs_found += added
         new += added
+    s.commit()
     log.info("company directory checked %d boards, %d new jobs", len(boards), new)
     return fetched, new
 

@@ -55,6 +55,7 @@ def run_source(ctx: AppContext, s: Session, source: Source) -> tuple[int, int]:
     for raw in raw_jobs:
         if _store_job(s, source, raw.normalized(), profile, describe=describe if hasattr(impl, "describe") else None):
             new += 1
+            s.commit()  # short write transactions, so the app stays responsive during a search
     # A job link that points at a company's hiring board adds that company to the directory.
     boards = [b for b in (companies.board_from_url(r.url or "") for r in raw_jobs) if b]
     if boards:
@@ -178,6 +179,7 @@ def collect_all(ctx: AppContext, trigger: str = "schedule", source_ids: list[int
             with ctx.db.session() as s:
                 source = s.get(Source, src.id)
                 source.last_run_at = datetime.now(timezone.utc)
+                s.commit()  # never hold SQLite's write lock while a source is on the network
                 try:
                     fetched, new = run_source(ctx, s, source)
                     source.last_status, source.last_error = "ok", None

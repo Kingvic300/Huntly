@@ -13,6 +13,7 @@ import logging
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import OperationalError
 
 from huntly import __version__
 from huntly.api.routes import analytics, applications, companies, jobs, system
@@ -52,6 +53,14 @@ def create_app(ctx: AppContext, api_token: str) -> FastAPI:
     @app.exception_handler(VaultLocked)
     async def _locked(_: Request, exc: VaultLocked):
         return JSONResponse({"detail": str(exc)}, status_code=423)
+
+    @app.exception_handler(OperationalError)
+    async def _busy(_: Request, exc: OperationalError):
+        if "locked" in str(exc.orig):
+            log.warning("database busy: %s", exc.orig)
+            return JSONResponse({"detail": "Huntly is busy saving search results. Try again in a few seconds."}, status_code=503)
+        log.exception("unhandled error")
+        return JSONResponse({"detail": f"Internal error: {type(exc).__name__}"}, status_code=500)
 
     @app.exception_handler(Exception)
     async def _unhandled(_: Request, exc: Exception):
