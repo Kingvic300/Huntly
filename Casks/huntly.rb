@@ -1,9 +1,9 @@
 cask "huntly" do
   arch arm: "aarch64", intel: "x64"
 
-  version "0.3.3"
-  sha256 arm:   "e5ebba8621abfe7d152b0fcdacb4a9ce90b4b15eb41f317a326398238f8ee906",
-         intel: "dcb7fb943468c3020aec9e028f0e45782e095d01e4925349d3c6815aea056471"
+  version "0.5.0"
+  sha256 arm:   "f7230df4de7570c27f401d7c716e26d02168d34b6710f372770e4fb280c792be",
+         intel: "b7e71ecb17ddc33743c87e918e030ec7c9fde13474a9aa8d5bd0a4ee2981ea3d"
 
   url "https://github.com/Kingvic300/Huntly/releases/download/v#{version}/Huntly_#{version}_#{arch}.dmg"
   name "Huntly"
